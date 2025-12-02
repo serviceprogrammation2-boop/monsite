@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <style>
+        body {
+            font-family: sans-serif;
+            font-size: 11px;
+        }
+
+        h2 {
+            margin-top: 25px;
+            text-align: center;
+            background: #eee;
+            padding: 6px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        th,
+        td {
+            border: 1px solid #000;
+            padding: 4px;
+            text-align: center;
+        }
+
+        th {
+            background: #ddd;
+        }
+    </style>
+</head>
+
+<body>
+
+    {% for sortie, lignes in groupes.items %}
+    <h2>Sortie : {{ map_sortie.sortie|default:"Non définie" }}</h2>
+
+
+    <table>
+        <thead>
+            <tr>
+                <th>Ord</th>
+                <th>Code</th>
+                <th>Origine</th>
+                <th>Destination</th>
+                <th>Agence</th>
+                <th>KLM</th>
+                <th>Actif</th>
+                <th>Client</th>
+                <th>SV</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for l in lignes %}
+            <tr>
+                <td>{{ l.ord }}</td>
+                <td>{{ l.code }}</td>
+                <td>{{ l.origine }}</td>
+                <td>{{ l.dest }}</td>
+                <td>{{ l.agence }}</td>
+                <td>{{ l.klm }}</td>
+                <td>{{ l.actif }}</td>
+                <td>{{ l.client }}</td>
+                <td>{{ l.sv }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    {% endfor %}
+
+</body>
+
+</html>

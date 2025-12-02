@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Liste des Navettes</title>
+
+    <style>
+        body {
+            font-size: 12px;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            border: 1px solid #444;
+            padding: 4px;
+        }
+
+        th {
+            background: #f2f2f2;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Liste des Navettes</h1>
+
+    <p><strong>Filtres appliqués :</strong>
+        {% if start and end %} Du {{ start }} au {{ end }} {% endif %}
+        {% if achauffeur %} | Chauffeur : {{ achauffeur }} {% endif %}
+        {% if aveh %} | Véhicule : {{ aveh }} {% endif %}
+    </p>
+
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Ligne</th>
+                <th>Origine</th>
+                <th>Destination</th>
+                <th>Date</th>
+                <th>Matricule</th>
+                <th>Chauffeur</th>
+                <th>Matricule (R)</th>
+                <th>Chauffeur (R)</th>
+                <th>Véhicule</th>
+                <th>Véhicule (R)</th>
+                <th>AGS</th>
+                <th>REM</th>
+                <th>Sens</th>
+                <th>NDR</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for nav in navettes %}
+            <tr>
+                <td>{{ nav.ligne.code }}</td>
+                <td>{{ nav.ligne.origine }}</td>
+                <td>{{ nav.ligne.dest }}</td>
+                <td>{{ nav.adatserv|date:"d/m/Y" }}</td>
+                <td>{{ nav.achauffeur.mat_emp }}</td>
+                <td>{{ nav.achauffeur.nom_emp }}</td>
+                <td>{{ nav.rchauffeur.mat_emp }}</td>
+                <td>{{ nav.rchauffeur.nom_emp }}</td>
+                <td>{{ nav.aveh }}</td>
+                <td>{{ nav.rveh }}</td>
+                <td>{{ nav.ags }}</td>
+                <td>{{ nav.rem }}</td>
+                <td>{{ nav.asens }}</td>
+                <td>{{ nav.ndr }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+
+</html>

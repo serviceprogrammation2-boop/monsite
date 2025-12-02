@@ -1,0 +1,29 @@
+/* Réduit la largeur de la colonne ORD */
+th.column-ord,
+td.field-ord {
+    width: 50px !important;
+    text-align: center;
+}
+
+/* Boutons plus compacts */
+a.button {
+    padding: 2px 4px !important;
+    font-size: 11px !important;
+    margin-right: 3px !important;
+}
+
+/* Empêche le retour à la ligne dans la colonne Actions */
+th.column-boutons_actions,
+td.field-boutons_actions {
+    white-space: nowrap !important;
+}
+
+/* Style pour les boutons de cette colonne uniquement */
+td.field-boutons_actions a.button {
+    display: inline-block;
+    padding: 3px 6px;
+    font-size: 12px;
+    margin-right: 4px;
+    border-radius: 4px;
+    text-decoration: none !important;
+}

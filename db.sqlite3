@@ -1,0 +1,29 @@
+/* Réduire largeur colonne ORD */
+.column-ord {
+    width: 40px !important;
+    text-align: center;
+}
+
+/* Agrandir colonne Actions */
+.column-boutons_actions {
+    width: 180px !important;
+}
+
+/* Style des boutons */
+.btn-admin-action {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 4px;
+    text-decoration: none;
+    font-size: 13px;
+    color: white !important;
+    margin-right: 6px;
+}
+
+.btn-modifier {
+    background-color: #007bff;
+}
+
+.btn-map {
+    background-color: #28a745;
+}
