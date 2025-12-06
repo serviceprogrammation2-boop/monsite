@@ -23,3 +23,6 @@ media/
 
 # MacOS
 .DS_Store
+*.json
+*.sql
+
