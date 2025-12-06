@@ -80,16 +80,21 @@ WSGI_APPLICATION = 'monsite.wsgi.application'
 # -----------------------------
 # 🗄 DATABASE (Render PostgreSQL)
 # -----------------------------
+import dj_database_url
+import os
+
+DEBUG = False
+ALLOWED_HOSTS = ['*']  # ou ['monsite-vh4i.onrender.com'] pour plus de sécurité
+
+# Database PostgreSQL via DATABASE_URL fourni par Render
 DATABASES = {
-    'default': dj_database_url.config(
-        default=os.environ.get(
-            "DATABASE_URL",
-            "postgresql://navette_db_user:YRTD8gQiVqzrg9WPD6DaNu8injvwkkLF@dpg-d4lcgjre5dus73fmvhdg-a/navette_db"
-        ),
-        conn_max_age=600,
-        ssl_require=True
-    )
+    'default': dj_database_url.config(default=os.environ.get('DATABASE_URL'))
 }
+
+# Static files
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
 
 
 # -----------------------------

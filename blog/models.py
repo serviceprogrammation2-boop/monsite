@@ -22,7 +22,7 @@ class Ligne(models.Model):
 
     class Meta:
         db_table = 'ligne'
-        managed = False
+        managed = True 
 
 
 
@@ -32,7 +32,7 @@ class Employe(models.Model):
 
     class Meta:
         db_table = 'employe'
-        managed = False
+        managed = True  
 
     def __str__(self):
         return self.nom_emp
@@ -76,7 +76,7 @@ class Navette(models.Model):
 
     class Meta:
         db_table = 'navette'
-        managed = False
+        managed = True      # 👈 changer ici
         unique_together = ('ligne', 'asens', 'atypsrv', 'adatserv')
 
     def __str__(self):
@@ -137,5 +137,5 @@ class Locatile(models.Model):
     cod_vil = models.IntegerField(null=True, blank=True)
 
     class Meta:
-        managed = False      # 👈 Empêche Django de toucher à la table
+        managed = True      
         db_table = 'locatile'  # 👈 Nom exact dans ta base PostgreSQL
