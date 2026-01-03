@@ -1,11 +1,9 @@
 from django.shortcuts import render
-
 from django.utils.timezone import make_aware
 from django.core.paginator import Paginator
 from django.db.models import Q
 from django.template.loader import render_to_string
 from django.http import HttpResponse
-from weasyprint import HTML
 import os
 import tempfile
 from .models import Navette, Ligne, Locatile  # ✅ import correct
@@ -3649,3 +3647,5 @@ def equipement3_pdf(request):
     buffer.close()
 
     return HttpResponse(pdf, content_type="application/pdf")
+def test_render(request):
+    return HttpResponse("OK - Django fonctionne sur Render")

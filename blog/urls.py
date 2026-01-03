@@ -26,4 +26,5 @@ urlpatterns = [
     path('equipement1/pdf/', views.equipement1_pdf, name='equipement1_pdf'),
     path('equipement2/pdf/', views.equipement2_pdf, name='equipement2_pdf'),
     path('equipement3/pdf/', views.equipement3_pdf, name='equipement3_pdf'),
+    path("", views.test_render, name="test"),
 ]
