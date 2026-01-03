@@ -83,8 +83,14 @@ WSGI_APPLICATION = 'monsite.wsgi.application'
 import dj_database_url
 import os
 
-DEBUG = False
-ALLOWED_HOSTS = ['*']  # ou ['monsite-vh4i.onrender.com'] pour plus de sécurité
+DEBUG = True  # TEMPORAIRE pour voir les erreurs
+
+ALLOWED_HOSTS = [
+    "monsite-vh4i.onrender.com",
+    "localhost",
+    "127.0.0.1",
+]
+
 
 # Database PostgreSQL via DATABASE_URL fourni par Render
 DATABASES = {
