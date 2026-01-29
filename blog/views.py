@@ -2461,6 +2461,8 @@ from operator import attrgetter
 import tempfile, os
 from django.http import HttpResponse
 from django.template.loader import render_to_string
+from weasyprint import HTML
+from weasyprint import HTML, CSS
 
 
 MAP_SORTIE = {
