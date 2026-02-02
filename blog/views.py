@@ -3439,12 +3439,28 @@ def equipement2_pdf(request):
     return response
 
 
-def equipement3_pdf(request):
-    from statistics import mean
+from django.http import HttpResponse
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.lib.pagesizes import A4
+from reportlab.lib import colors
+from io import BytesIO
+from datetime import datetime, date
+from dateutil.relativedelta import relativedelta
+from statistics import mean
+from collections import defaultdict
 
+from .models import Equipement, Navette
+from .utils import safe_date, apply_navette_period_filter
+
+
+def equipement3_pdf(request):
+
+    # =======================
+    # 1️⃣ FILTRES ÉQUIPEMENTS
+    # =======================
     equipements = Equipement.objects.all().order_by("des_equ", "cod_equ")
 
-    # --- Filtres ---
     cod_fam_equ = request.GET.get("cod_fam_equ", "").strip()
     cod_equ = request.GET.get("cod_equ", "").strip()
     mod_equ = request.GET.get("mod_equ", "").strip()
@@ -3466,48 +3482,73 @@ def equipement3_pdf(request):
         cod_sta_list = [s.strip() for s in cod_sta.split(",") if s.strip()]
         equipements = equipements.filter(cod_sta__in=cod_sta_list)
 
-    # --- Dates pour filtrage navettes (même si on n'affiche plus les navettes) ---
+    # =======================
+    # 2️⃣ PÉRIODE NAVETTES
+    # =======================
     start_date = datetime.strptime(start, "%Y-%m-%d").date() if start else None
     end_date = datetime.strptime(end, "%Y-%m-%d").date() if end else None
 
-    # --- PDF ---
-    response = HttpResponse(content_type="application/pdf")
-    response["Content-Disposition"] = 'inline; filename="equipements.pdf"'
+    # =======================
+    # 3️⃣ CHARGEMENT NAVETTES (UNE SEULE FOIS 🔥)
+    # =======================
+    navettes_qs = Navette.objects.select_related(
+        "ligne", "achauffeur", "rchauffeur"
+    )
+
+    navettes_qs = apply_navette_period_filter(
+        navettes_qs, start_date, end_date
+    )
+
+    navettes_by_veh = defaultdict(list)
+    for n in navettes_qs:
+        navettes_by_veh[n.aveh].append(n)
+
+    # =======================
+    # 4️⃣ INITIALISATION PDF
+    # =======================
     buffer = BytesIO()
-    doc = SimpleDocTemplate(buffer, pagesize=A4, leftMargin=20, rightMargin=20)
+    doc = SimpleDocTemplate(
+        buffer,
+        pagesize=A4,
+        leftMargin=20,
+        rightMargin=20,
+        topMargin=20,
+        bottomMargin=20,
+    )
+
     styles = getSampleStyleSheet()
     elements = []
 
-    # --- Titre ---
     elements.append(Paragraph("Liste des véhicules du Parc SNTRI", styles["Heading1"]))
-    today_str = datetime.today().strftime("%d/%m/%Y")
-    elements.append(Paragraph(f"Date : {today_str}", styles["Normal"]))
+    elements.append(Paragraph(f"Date : {datetime.today().strftime('%d/%m/%Y')}", styles["Normal"]))
 
     if start and end:
         elements.append(Paragraph(f"Période : {start} → {end}", styles["Normal"]))
 
     elements.append(Spacer(1, 10))
 
-    # --- Variables globales ---
+    # =======================
+    # 5️⃣ VARIABLES TOTAUX
+    # =======================
     today = date.today()
+
     current_model = None
     model_rows = []
-    model_ages = []
+
+    model_total_veh = 0
+    model_total_km = 0
+    model_total_disp = 0
+    model_total_ages = []
 
     total_general = 0
     total_general_km = 0
     total_general_navettes = 0
     total_general_aveh_disp = 0
     all_ages = []
-    # Totaux pour un modèle
-    model_total_veh = 0
-    model_total_km = 0
-    model_total_nav = 0
-    model_total_disp = 0
-    model_total_ages = []
 
-
-    # --- Fonction pour imprimer un bloc modèle ---
+    # =======================
+    # 6️⃣ FONCTION BLOC MODÈLE
+    # =======================
     def print_model_block():
         if len(model_rows) <= 1:
             return []
@@ -3517,20 +3558,16 @@ def equipement3_pdf(request):
         block.append(Paragraph(f"<b>Désignation : {current_model}</b>", styles["Heading3"]))
         block.append(Spacer(1, 4))
 
-        # --- Ligne récap par groupe ---
         if model_total_ages:
-            avg_days = mean(model_total_ages)
-            avg_years = avg_days / 365
-            avg_age = f"{avg_years:.1f} ans"
+            avg_age = f"{(mean(model_total_ages) / 365):.1f} ans"
         else:
             avg_age = "-"
 
         recap_row = [
-            f"Âge moy :", avg_age, "", f"Veh disp : ", model_total_disp, "", "", f"KM :",
-            model_total_km,
+            "Âge moy :", avg_age, "", "Veh disp :", model_total_disp,
+            "", "", "KM :", f"{model_total_km:.1f}"
         ]
 
-        # Ajouter la ligne recap au tableau
         table_data = model_rows + [recap_row]
 
         table = Table(table_data, colWidths=[45, 80, 60, 100, 55, 50, 50, 50, 40])
@@ -3540,58 +3577,55 @@ def equipement3_pdf(request):
             ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
             ("ALIGN", (0, 0), (-1, -1), "CENTER"),
             ("FONTSIZE", (0, 0), (-1, -1), 8),
-
-            # Style pour la ligne recap
-            ("BACKGROUND", (0, len(table_data)-1), (-1, len(table_data)-1), colors.lightgrey),
-            ("FONTNAME", (0, len(table_data)-1), (-1, len(table_data)-1), "Helvetica-Bold"),
+            ("BACKGROUND", (0, -1), (-1, -1), colors.lightgrey),
+            ("FONTNAME", (0, -1), (-1, -1), "Helvetica-Bold"),
         ]))
 
         block.append(table)
         block.append(Spacer(1, 10))
         return block
 
-
-    # --- Parcours des équipements ---
+    # =======================
+    # 7️⃣ PARCOURS ÉQUIPEMENTS
+    # =======================
     for eq in equipements:
 
-        # Détection changement de modèle
         if current_model != eq.des_equ:
             elements.extend(print_model_block())
 
-            # Réinitialiser pour le nouveau modèle
             current_model = eq.des_equ
-            model_rows = [["N° Parc", "Modèle", "Marque", "N° Série",
-                        "N° Police", "Date Acqu.", "Date Inscrip.", "Âge", "KM Effectif"]]
+            model_rows = [[
+                "N° Parc", "Modèle", "Marque", "N° Série",
+                "N° Police", "Date Acqu.", "Date Inscrip.", "Âge", "KM Effectif"
+            ]]
 
             model_total_veh = 0
             model_total_km = 0
-            model_total_nav = 0
             model_total_disp = 0
             model_total_ages = []
 
-        # --- Âge du véhicule ---
+        # --- ÂGE ---
         if eq.dat_ins_equ:
             diff = relativedelta(today, eq.dat_ins_equ)
             age_str = f"{diff.years}a {diff.months}m {diff.days}j"
-
             age_days = (today - eq.dat_ins_equ).days
-            all_ages.append(age_days)
             model_total_ages.append(age_days)
+            all_ages.append(age_days)
         else:
             age_str = "-"
 
-        # --- KM Effectif ---
-        navettes = Navette.objects.filter(aveh=eq.cod_equ)
-        navettes = apply_navette_period_filter(navettes, start_date, end_date)
+        # --- NAVETTES ---
+        navettes = navettes_by_veh.get(eq.cod_equ, [])
 
         km_total = 0
         for n in navettes:
             km = float(n.ligne.klm) if n.ligne and n.ligne.klm else 0
-            coef_aller = 1 if (n.achauffeur and n.achauffeur.mat_emp != "30000") else 0
-            coef_retour = 1 if (n.rchauffeur and n.rchauffeur.mat_emp != "30000") else 0
-            km_total += km * coef_aller + km * coef_retour
+            km_total += km * (
+                (1 if n.achauffeur and n.achauffeur.mat_emp != "30000" else 0) +
+                (1 if n.rchauffeur and n.rchauffeur.mat_emp != "30000" else 0)
+            )
 
-        # --- Ajouter ligne au modèle ---
+        # --- LIGNE TABLE ---
         model_rows.append([
             eq.cod_equ,
             eq.des_equ,
@@ -3601,53 +3635,41 @@ def equipement3_pdf(request):
             safe_date(eq.dat_aqu_equ),
             safe_date(eq.dat_ins_equ),
             age_str,
-            f"{km_total:.1f}"
+            f"{km_total:.1f}",
         ])
 
-        # --- Mise à jour totaux du modèle ---
+        # --- TOTAUX ---
         model_total_veh += 1
         model_total_km += km_total
-        model_total_nav += len(navettes)
         if km_total > 0:
             model_total_disp += 1
 
-        # --- Totaux généraux ---
         total_general += 1
         total_general_km += km_total
         total_general_navettes += len(navettes)
         if km_total > 0:
             total_general_aveh_disp += 1
 
-
-
-    # --- dernier bloc ---
     elements.extend(print_model_block())
 
-    # --- Récapitulatif général ---
+    # =======================
+    # 8️⃣ RÉCAP GÉNÉRAL
+    # =======================
     elements.append(Spacer(1, 15))
 
-    if all_ages:
-        avg_days_general = mean(all_ages)
-        avg_years_general = avg_days_general / 365
-        avg_age_general_str = f"{avg_years_general:.1f} ans"
-    else:
-        avg_age_general_str = "-"
-    
-    
+    avg_age_general = f"{(mean(all_ages)/365):.1f} ans" if all_ages else "-"
 
-    elements.append(Paragraph(f"<b>Total général véhicules : {total_general}</b>", styles['Heading3']))
-    elements.append(Paragraph(f"<b>Total général véhicules disponibles : {total_general_aveh_disp}</b>", styles['Heading3']))
-    elements.append(Paragraph(f"<b>Total général km effectif : {total_general_km:.1f}</b>", styles['Heading3']))
-    elements.append(Paragraph(f"<b>Total général navettes : {total_general_navettes}</b>", styles['Heading3']))
-    elements.append(Paragraph(f"<b>Âge moyen général : {avg_age_general_str}</b>", styles['Heading3']))
+    elements.append(Paragraph(f"<b>Total général véhicules : {total_general}</b>", styles["Heading3"]))
+    elements.append(Paragraph(f"<b>Total véhicules disponibles : {total_general_aveh_disp}</b>", styles["Heading3"]))
+    elements.append(Paragraph(f"<b>Total km effectif : {total_general_km:.1f}</b>", styles["Heading3"]))
+    elements.append(Paragraph(f"<b>Total navettes : {total_general_navettes}</b>", styles["Heading3"]))
+    elements.append(Paragraph(f"<b>Âge moyen général : {avg_age_general}</b>", styles["Heading3"]))
 
-    elements.append(Spacer(1, 20))
-
-    # --- Générer PDF ---
+    # =======================
+    # 9️⃣ BUILD PDF
+    # =======================
     doc.build(elements)
     pdf = buffer.getvalue()
     buffer.close()
 
     return HttpResponse(pdf, content_type="application/pdf")
-def test_render(request):
-    return HttpResponse("OK - Django fonctionne sur Render")
