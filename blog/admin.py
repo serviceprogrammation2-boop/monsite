@@ -52,45 +52,37 @@ from .models import Ligne
 @admin.register(Ligne)
 class LigneAdmin(admin.ModelAdmin):
 
-    class Media:
-        css = {
-            'all': ('admin/custom_admin.css',)
-        }
-
     list_display = (
         'code', 'origine', 'dest', 'agence', 'klm', 'actif',
-        'sortie', 'ord', 'nch', 'client', 'sv', 'boutons_actions'
+        'boutons_actions'
     )
 
     list_filter = ('actif', 'agence')
     search_fields = ('code', 'origine', 'dest', 'agence')
-    ordering = ('ord',)
+    ordering = ('code',)
 
     def boutons_actions(self, obj):
-        url_modifier = f'/admin/blog/ligne/{obj.pk}/change/'
-        url_maps = (
-            f'https://www.google.com/maps/dir/?api=1'
-            f'&origin={obj.origine}&destination={obj.dest}'
-        )
-
         return format_html(
             '''
-            <div style="display:flex; gap:6px; align-items:center;">
-                <a href="{}"
-                   style="padding:4px 8px; background-color:#007bff;
-                          color:white; border-radius:4px;
-                          text-decoration:none; white-space:nowrap;">
-                    ✏️ Modifier
-                </a>
-                <a href="{}" target="_blank"
-                   style="padding:4px 8px; background-color:#28a745;
-                          color:white; border-radius:4px;
-                          text-decoration:none; white-space:nowrap;">
-                    🗺️ Itinéraire
-                </a>
-            </div>
+            <a class="button"
+               style="background:#007bff; color:white;
+                      padding:4px 8px; border-radius:4px;
+                      text-decoration:none; margin-right:6px;"
+               href="/admin/blog/ligne/{}/change/">
+               ✏️ Modifier
+            </a>
+            <a class="button"
+               style="background:#28a745; color:white;
+                      padding:4px 8px; border-radius:4px;
+                      text-decoration:none;"
+               target="_blank"
+               href="https://www.google.com/maps/dir/?api=1&origin={}&destination={}">
+               🗺️ Itinéraire
+            </a>
             ''',
-            url_modifier, url_maps
+            obj.pk,
+            obj.origine,
+            obj.dest
         )
 
     boutons_actions.short_description = "Actions"
