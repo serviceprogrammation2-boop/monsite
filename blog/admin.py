@@ -61,25 +61,36 @@ class LigneAdmin(admin.ModelAdmin):
     ordering = ('ord',)  #  ← tri croissant par ord
 
     
+from django.utils.html import format_html
 
-    def boutons_actions(self, obj):
-        """Ajoute deux boutons : Modifier et Itinéraire Google Maps"""
-        url_modifier = f'/admin/blog/ligne/{obj.pk}/change/'
-        url_maps = (
-            f'https://www.google.com/maps/dir/?api=1'
-            f'&origin={obj.origine}&destination={obj.dest}'
-        )
+def boutons_actions(self, obj):
+    url_modifier = f'/admin/blog/ligne/{obj.pk}/change/'
+    url_maps = (
+        f'https://www.google.com/maps/dir/?api=1'
+        f'&origin={obj.origine}&destination={obj.dest}'
+    )
 
-        return format_html(
-            '<a href="{}" class="button" style="padding:4px 8px; background-color:#007bff; '
-            'color:white; border-radius:4px; text-decoration:none; margin-right:5px;">✏️ Modifier</a>'
-            '<a href="{}" target="_blank" class="button" style="padding:4px 8px; background-color:#28a745; '
-            'color:white; border-radius:4px; text-decoration:none;">🗺️ Itinéraire</a>',
-            url_modifier, url_maps
-        )
+    return format_html(
+        '''
+        <div style="display:flex; gap:6px; align-items:center;">
+            <a href="{}"
+               style="padding:4px 8px; background-color:#007bff;
+                      color:white; border-radius:4px;
+                      text-decoration:none; white-space:nowrap;">
+                ✏️ Modifier
+            </a>
+            <a href="{}" target="_blank"
+               style="padding:4px 8px; background-color:#28a745;
+                      color:white; border-radius:4px;
+                      text-decoration:none; white-space:nowrap;">
+                🗺️ Itinéraire
+            </a>
+        </div>
+        ''',
+        url_modifier, url_maps
+    )
 
-    boutons_actions.short_description = "Actions"
-
+boutons_actions.short_description = "Actions"
 
 from django.contrib import admin
 from django.utils.html import format_html
