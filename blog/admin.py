@@ -43,54 +43,57 @@ class NavetteAdmin(admin.ModelAdmin):
     def chauffeur_nom(self, obj):
         return obj.achauffeur.nom_emp if obj.achauffeur else None
     chauffeur_nom.short_description = "Chauffeur"
+    
 from django.contrib import admin
-from .models import Ligne
 from django.utils.html import format_html
+from .models import Ligne
+
 
 @admin.register(Ligne)
 class LigneAdmin(admin.ModelAdmin):
+
     class Media:
         css = {
             'all': ('admin/custom_admin.css',)
         }
+
     list_display = (
         'code', 'origine', 'dest', 'agence', 'klm', 'actif',
-        'sortie', 'ord', 'nch', 'client', 'sv', 'boutons_actions')
+        'sortie', 'ord', 'nch', 'client', 'sv', 'boutons_actions'
+    )
+
     list_filter = ('actif', 'agence')
     search_fields = ('code', 'origine', 'dest', 'agence')
-    ordering = ('ord',)  #  ← tri croissant par ord
+    ordering = ('ord',)
 
-    
-from django.utils.html import format_html
+    def boutons_actions(self, obj):
+        url_modifier = f'/admin/blog/ligne/{obj.pk}/change/'
+        url_maps = (
+            f'https://www.google.com/maps/dir/?api=1'
+            f'&origin={obj.origine}&destination={obj.dest}'
+        )
 
-def boutons_actions(self, obj):
-    url_modifier = f'/admin/blog/ligne/{obj.pk}/change/'
-    url_maps = (
-        f'https://www.google.com/maps/dir/?api=1'
-        f'&origin={obj.origine}&destination={obj.dest}'
-    )
+        return format_html(
+            '''
+            <div style="display:flex; gap:6px; align-items:center;">
+                <a href="{}"
+                   style="padding:4px 8px; background-color:#007bff;
+                          color:white; border-radius:4px;
+                          text-decoration:none; white-space:nowrap;">
+                    ✏️ Modifier
+                </a>
+                <a href="{}" target="_blank"
+                   style="padding:4px 8px; background-color:#28a745;
+                          color:white; border-radius:4px;
+                          text-decoration:none; white-space:nowrap;">
+                    🗺️ Itinéraire
+                </a>
+            </div>
+            ''',
+            url_modifier, url_maps
+        )
 
-    return format_html(
-        '''
-        <div style="display:flex; gap:6px; align-items:center;">
-            <a href="{}"
-               style="padding:4px 8px; background-color:#007bff;
-                      color:white; border-radius:4px;
-                      text-decoration:none; white-space:nowrap;">
-                ✏️ Modifier
-            </a>
-            <a href="{}" target="_blank"
-               style="padding:4px 8px; background-color:#28a745;
-                      color:white; border-radius:4px;
-                      text-decoration:none; white-space:nowrap;">
-                🗺️ Itinéraire
-            </a>
-        </div>
-        ''',
-        url_modifier, url_maps
-    )
-
-boutons_actions.short_description = "Actions"
+    boutons_actions.short_description = "Actions"
 
 from django.contrib import admin
 from django.utils.html import format_html
