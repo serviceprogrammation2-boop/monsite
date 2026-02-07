@@ -15,8 +15,10 @@ a.button {
 /* Empêche le retour à la ligne dans la colonne Actions */
 th.column-boutons_actions,
 td.field-boutons_actions {
-    white-space: nowrap !important;
+    width: 110px;
+    text-align: center;
 }
+
 
 /* Style pour les boutons de cette colonne uniquement */
 td.field-boutons_actions a.button {
@@ -27,3 +29,4 @@ td.field-boutons_actions a.button {
     border-radius: 4px;
     text-decoration: none !important;
 }
+

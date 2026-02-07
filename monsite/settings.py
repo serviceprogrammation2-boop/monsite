@@ -1,6 +1,24 @@
 """
 Django settings for monsite project.
 """
+from pathlib import Path
+import os
+import dj_database_url
+from dotenv import load_dotenv
+
+# Charger .env.local
+load_dotenv(os.path.join(Path(__file__).resolve().parent, '.env.local'))
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+DATABASES = {
+    'default': dj_database_url.config(
+        default=os.environ.get('DATABASE_URL'),
+        conn_max_age=600,
+        ssl_require=os.environ.get('DATABASE_URL', '').startswith('postgresql://ep-')  # SSL seulement pour Neon
+    )
+}
+
 
 from pathlib import Path
 import os
@@ -31,7 +49,6 @@ INSTALLED_APPS = [
 
     # Tes apps
     'blog',
-    'core',
     'rangefilter',
     'background_task',
 ]
@@ -96,11 +113,6 @@ ALLOWED_HOSTS = [
     "127.0.0.1",
 ]
 
-
-# Database PostgreSQL via DATABASE_URL fourni par Render
-DATABASES = {
-    'default': dj_database_url.config(default=os.environ.get('DATABASE_URL'))
-}
 
 from pathlib import Path
 import os

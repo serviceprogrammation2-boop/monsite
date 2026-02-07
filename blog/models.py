@@ -49,7 +49,7 @@ class Navette(models.Model):
     asens = models.CharField(max_length=5)
     atypsrv = models.CharField(max_length=5)
     nda = models.IntegerField()
-    adatserv = models.DateTimeField()
+    adatserv = models.DateField(null=True, blank=True)
     achauffeur = models.ForeignKey(
         Employe,
         db_column='achauffeur',

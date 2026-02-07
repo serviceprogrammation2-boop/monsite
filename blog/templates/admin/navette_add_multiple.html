@@ -1,0 +1,31 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block content %}
+<h1>Ajouter plusieurs Navettes</h1>
+<form method="post">{% csrf_token %}
+    <table style="border-collapse: collapse;">
+        <thead>
+            <tr>
+                {% for form in formset.forms %}
+                    {% if forloop.first %}
+                        {% for field in form.visible_fields %}
+                            <th style="border:1px solid #ccc; padding:4px;">{{ field.label }}</th>
+                        {% endfor %}
+                    {% endif %}
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for form in formset.forms %}
+            <tr>
+                {% for field in form.visible_fields %}
+                    <td style="border:1px solid #ccc; padding:4px;">{{ field }}</td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <input type="submit" value="Ajouter les Navettes" class="default">
+</form>
+{% endblock %}
