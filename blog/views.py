@@ -17,6 +17,25 @@ from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
 
+from django.shortcuts import render, redirect
+from .forms import NavetteFormSet
+from .models import Navette
+
+def navette_manage(request):
+    # seulement les nouvelles lignes
+    queryset = Navette.objects.none()  
+
+    if request.method == 'POST':
+        formset = NavetteFormSet(request.POST, queryset=queryset)
+        if formset.is_valid():
+            formset.save()
+            return redirect('navette_manage')
+    else:
+        formset = NavetteFormSet(queryset=queryset)
+
+    return render(request, 'blog/navette_formset.html', {'formset': formset})
+
+
 def liste_navettes(request):
     start = request.GET.get("start")
     end = request.GET.get("end")
