@@ -5,7 +5,8 @@ from .views import navette_manage
 
 urlpatterns = [
     path('navettes/', views.liste_navettes, name='liste_navettes'),
-    path('navettes/gestion/', navette_manage, name='navette_manage'),  
+    path('navettes/gestion/', navette_manage, name='navette_manage'),
+    path("navettes/auto/",views.navettes_auto_today,name="navettes_auto_today"),  
 
     path("navettes/pdf/", views.navettes_pdf, name="navettes_pdf"),
     path("navettes1/pdf/", views.navettes1_pdf, name="navettes1_pdf"),

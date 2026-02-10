@@ -17,23 +17,75 @@ from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
 
-from django.shortcuts import render, redirect
+from django.utils.timezone import now
+from .models import Ligne, Navette
 from .forms import NavetteFormSet
-from .models import Navette
 
 def navette_manage(request):
-    # seulement les nouvelles lignes
-    queryset = Navette.objects.none()  
+    initial_data = []
+    auto = request.GET.get("auto")
 
-    if request.method == 'POST':
-        formset = NavetteFormSet(request.POST, queryset=queryset)
+    today = now().date()
+
+    if auto == "jour":
+        codes_lignes = [102, 103, 104, 209, 509]
+
+    elif auto == "nuit":
+        codes_lignes = [510, 501, 502, 507, 512]
+
+    else:
+        codes_lignes = []
+
+    if codes_lignes:
+        lignes = Ligne.objects.filter(code__in=codes_lignes)
+
+        for ligne in lignes:
+            initial_data.append({
+                "ligne": ligne,
+                "adatserv": today,
+            })
+
+    if request.method == "POST":
+        formset = NavetteFormSet(request.POST, queryset=Navette.objects.none())
         if formset.is_valid():
             formset.save()
-            return redirect('navette_manage')
+            return redirect("navette_manage")
     else:
-        formset = NavetteFormSet(queryset=queryset)
+        formset = NavetteFormSet(
+            queryset=Navette.objects.none(),
+            initial=initial_data
+        )
 
-    return render(request, 'blog/navette_formset.html', {'formset': formset})
+    return render(request, "blog/navette_formset.html", {
+        "formset": formset
+    })
+
+
+from django.shortcuts import redirect
+from django.utils.timezone import now
+from .models import Navette, Ligne
+
+def navettes_auto_today(request):
+    if request.method == "POST":
+        # 🔢 codes lignes à insérer automatiquement
+        codes_lignes = [102, 103, 104, 209, 509]
+
+        today = now().date()
+
+        lignes = Ligne.objects.filter(code__in=codes_lignes)
+
+        navettes = []
+        for ligne in lignes:
+            navettes.append(
+                Navette(
+                    ligne=ligne,
+                    adatserv=today,
+                )
+            )
+
+        Navette.objects.bulk_create(navettes)
+
+    return redirect("navette_manage")  # retour vers la gestion
 
 
 def liste_navettes(request):

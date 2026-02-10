@@ -14,6 +14,6 @@ class NavetteForm(forms.ModelForm):
 NavetteFormSet = modelformset_factory(
     Navette,
     form=NavetteForm,
-    extra=20,
+    extra=10,
     can_delete=True
 )
