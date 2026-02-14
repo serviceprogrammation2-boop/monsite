@@ -51,6 +51,10 @@ INSTALLED_APPS = [
     'blog',
     'rangefilter',
     'background_task',
+
+    # DAL
+    'dal',
+    'dal_select2',
 ]
 
 

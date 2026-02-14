@@ -21,8 +21,10 @@ class Ligne(models.Model):
     sv = models.CharField(max_length=10, null=True, blank=True)
 
     class Meta:
-        db_table = 'ligne'
-        managed = True 
+        db_table = "ligne"
+
+    def __str__(self):
+        return f"{self.code} - {self.origine} → {self.dest}"
 
 
 
@@ -35,52 +37,8 @@ class Employe(models.Model):
         managed = True  
 
     def __str__(self):
-        return self.nom_emp
+        return f"{self.mat_emp} - {self.nom_emp}"
 
-
-class Navette(models.Model):
-    id = models.AutoField(primary_key=True)
-    ligne = models.ForeignKey(
-        Ligne,
-        to_field='code',
-        db_column='ligne',
-        on_delete=models.DO_NOTHING
-    )
-    asens = models.CharField(max_length=5)
-    atypsrv = models.CharField(max_length=5)
-    nda = models.IntegerField()
-    adatserv = models.DateField(null=True, blank=True)
-    achauffeur = models.ForeignKey(
-        Employe,
-        db_column='achauffeur',
-        to_field='mat_emp',
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name="navettes_principales"
-    )
-    rchauffeur = models.ForeignKey(
-        Employe,
-        db_column='rchauffeur',
-        to_field='mat_emp',
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name="navettes_retour"
-    )
-    aveh = models.CharField(max_length=50, null=True, blank=True)
-    rveh = models.CharField(max_length=50, null=True, blank=True)
-    ags = models.CharField(max_length=50, null=True, blank=True)
-    rem = models.CharField(max_length=50, null=True, blank=True)
-    ndr = models.IntegerField(null=True, blank=True)
-
-    class Meta:
-        db_table = 'navette'
-        managed = True      # 👈 changer ici
-        unique_together = ('ligne', 'asens', 'atypsrv', 'adatserv')
-
-    def __str__(self):
-        return f"Navette {self.id} - {self.ligne.code} ({self.adatserv:%Y-%m-%d})"
 from django.db import models
 
 class Equipement(models.Model):
@@ -127,7 +85,8 @@ class Equipement(models.Model):
         db_table = "equipement"
 
     def __str__(self):
-        return f"{self.cod_equ} - {self.des_equ or ''}"
+        return self.cod_equ
+
 
 class Locatile(models.Model):
     cod_loc = models.CharField(max_length=5, primary_key=True)
@@ -139,3 +98,66 @@ class Locatile(models.Model):
     class Meta:
         managed = True      
         db_table = 'locatile'  # 👈 Nom exact dans ta base PostgreSQL
+
+
+class Navette(models.Model):
+    id = models.AutoField(primary_key=True)
+    ligne = models.ForeignKey(
+        Ligne,
+        to_field='code',
+        db_column='ligne',
+        on_delete=models.DO_NOTHING
+    )
+    asens = models.CharField(max_length=5)
+    atypsrv = models.CharField(max_length=5)
+    nda = models.IntegerField()
+    adatserv = models.DateField(null=True, blank=True)
+    achauffeur = models.ForeignKey(
+        Employe,
+        db_column='achauffeur',
+        to_field='mat_emp',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="navettes_principales"
+    )
+    rchauffeur = models.ForeignKey(
+        Employe,
+        db_column='rchauffeur',
+        to_field='mat_emp',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="navettes_retour"
+    )
+    aveh = models.ForeignKey(
+        Equipement,
+        db_column='aveh',      # 👈 IMPORTANT
+        to_field='cod_equ',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="navettes_aller"
+    )
+
+    rveh = models.ForeignKey(
+        Equipement,
+        db_column='rveh',      # 👈 IMPORTANT
+        to_field='cod_equ',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="navettes_retour"
+    )
+
+    ags = models.CharField(max_length=50, null=True, blank=True)
+    rem = models.CharField(max_length=50, null=True, blank=True)
+    ndr = models.IntegerField(null=True, blank=True)
+
+    class Meta:
+        db_table = 'navette'
+        managed = True      # 👈 changer ici
+        unique_together = ('ligne', 'asens', 'atypsrv', 'adatserv')
+
+    def __str__(self):
+        return f"Navette {self.id} - {self.ligne.code} ({self.adatserv:%Y-%m-%d})"

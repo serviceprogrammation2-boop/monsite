@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.utils.timezone import make_aware
 from django.core.paginator import Paginator
 from django.db.models import Q
@@ -20,25 +20,33 @@ from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, 
 from django.utils.timezone import now
 from .models import Ligne, Navette
 from .forms import NavetteFormSet
+from django.db.models import Case, When, IntegerField
+
+
 
 def navette_manage(request):
-    initial_data = []
-    auto = request.GET.get("auto")
-
     today = now().date()
+    auto = request.GET.get("auto")  # bouton cliqué ?
 
-    if auto == "jour":
-        codes_lignes = [102, 103, 104, 209, 509]
-
+    # Codes par type de navettes
+    codes_lignes = []
+    if auto == "grand jour":
+        codes_lignes = [118, 147, 145, 120, 132, 233]
+    elif auto == "jour":
+        codes_lignes = [146, 189, 142, 209, 406, 149, 194, 104, 295]
     elif auto == "nuit":
-        codes_lignes = [510, 501, 502, 507, 512]
+        codes_lignes = [961, 518, 117, 507, 500, 504, 506, 503, 512, 501, 502, 509, 510, 964]
+    elif auto == "agence":
+        codes_lignes = [100, 963, 183, 102, 101, 143, 144]
 
-    else:
-        codes_lignes = []
-
+    # Si l'utilisateur a cliqué sur un bouton, on prépare les données initiales
+    initial_data = []
     if codes_lignes:
-        lignes = Ligne.objects.filter(code__in=codes_lignes)
-
+        preserved_order = Case(
+            *[When(code=code, then=pos) for pos, code in enumerate(codes_lignes)],
+            output_field=IntegerField()
+        )
+        lignes = Ligne.objects.filter(code__in=codes_lignes).order_by(preserved_order)
         for ligne in lignes:
             initial_data.append({
                 "ligne": ligne,
@@ -46,46 +54,33 @@ def navette_manage(request):
             })
 
     if request.method == "POST":
+        # On enregistre les navettes envoyées
         formset = NavetteFormSet(request.POST, queryset=Navette.objects.none())
         if formset.is_valid():
             formset.save()
-            return redirect("navette_manage")
+            # Rediriger vers le même jour pour voir et éditer les navettes enregistrées
+            return redirect(f"{request.path}?auto={auto}" if auto else request.path)
     else:
-        formset = NavetteFormSet(
-            queryset=Navette.objects.none(),
-            initial=initial_data
-        )
+        if auto:  # Préparer nouvelles navettes pour le jour sélectionné
+            # On n'affiche pas les anciennes, juste les nouvelles initiales
+            formset = NavetteFormSet(queryset=Navette.objects.none(), initial=initial_data)
+        else:
+            # Afficher toutes les navettes déjà enregistrées pour aujourd'hui
+            formset = NavetteFormSet(queryset=Navette.objects.filter(adatserv=today))
 
-    return render(request, "blog/navette_formset.html", {
-        "formset": formset
-    })
+    return render(request, "blog/navette_formset.html", {"formset": formset})
 
 
-from django.shortcuts import redirect
-from django.utils.timezone import now
-from .models import Navette, Ligne
+# blog/views.py
+from dal import autocomplete
+from .models import Equipement
 
-def navettes_auto_today(request):
-    if request.method == "POST":
-        # 🔢 codes lignes à insérer automatiquement
-        codes_lignes = [102, 103, 104, 209, 509]
-
-        today = now().date()
-
-        lignes = Ligne.objects.filter(code__in=codes_lignes)
-
-        navettes = []
-        for ligne in lignes:
-            navettes.append(
-                Navette(
-                    ligne=ligne,
-                    adatserv=today,
-                )
-            )
-
-        Navette.objects.bulk_create(navettes)
-
-    return redirect("navette_manage")  # retour vers la gestion
+class EquipementAutocomplete(autocomplete.Select2QuerySetView):
+    def get_queryset(self):
+        qs = Equipement.objects.all()
+        if self.q:  # si l'utilisateur tape quelque chose
+            qs = qs.filter(cod_equ__icontains=self.q)
+        return qs
 
 
 def liste_navettes(request):

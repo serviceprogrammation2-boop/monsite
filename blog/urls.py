@@ -1,12 +1,17 @@
 from django.urls import path
-from . import views, reports
+from . import views, reports, autocomplete
 from .views import navette_manage
 
+from . import views, autocomplete
 
 urlpatterns = [
     path('navettes/', views.liste_navettes, name='liste_navettes'),
-    path('navettes/gestion/', navette_manage, name='navette_manage'),
-    path("navettes/auto/",views.navettes_auto_today,name="navettes_auto_today"),  
+    path('navettes/gestion/', views.navette_manage, name='navette_manage'),
+
+    # URLs pour autocomplete
+    path('autocomplete/employe/', autocomplete.EmployeAutocomplete.as_view(), name='employe-autocomplete'),
+    path('autocomplete/equipement/', autocomplete.EquipementAutocomplete.as_view(), name='equipement-autocomplete'),
+
 
     path("navettes/pdf/", views.navettes_pdf, name="navettes_pdf"),
     path("navettes1/pdf/", views.navettes1_pdf, name="navettes1_pdf"),
