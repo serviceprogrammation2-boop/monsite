@@ -52,9 +52,7 @@ INSTALLED_APPS = [
     'rangefilter',
     'background_task',
 
-    # DAL
-    'dal',
-    'dal_select2',
+    
 ]
 
 

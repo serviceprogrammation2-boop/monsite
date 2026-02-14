@@ -71,16 +71,7 @@ def navette_manage(request):
     return render(request, "blog/navette_formset.html", {"formset": formset})
 
 
-# blog/views.py
-from dal import autocomplete
-from .models import Equipement
 
-class EquipementAutocomplete(autocomplete.Select2QuerySetView):
-    def get_queryset(self):
-        qs = Equipement.objects.all()
-        if self.q:  # si l'utilisateur tape quelque chose
-            qs = qs.filter(cod_equ__icontains=self.q)
-        return qs
 
 
 def liste_navettes(request):
