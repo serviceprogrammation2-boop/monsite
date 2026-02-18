@@ -20,6 +20,15 @@
     </style>
 </head>
 <body>
+<nav>
+    <ul>
+        {% if perms.blog.can_add_navette_form %}
+            <li><a href="{% url 'liste_navettes' %}">Gestion des navettes</a></li>
+        {% endif %}
+        <!-- autres liens pour admin ou autres utilisateurs -->
+    </ul>
+</nav>
+
 <h1>Gestion des Navettes</h1>
 
 <!-- Boutons pour pré-remplir les navettes -->

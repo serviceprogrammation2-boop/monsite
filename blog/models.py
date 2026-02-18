@@ -2,6 +2,8 @@
 from django.db import models
 
 
+
+
 class Ligne(models.Model):
     code = models.CharField(max_length=10, primary_key=True)
     origine = models.CharField(max_length=100)
@@ -158,6 +160,10 @@ class Navette(models.Model):
         db_table = 'navette'
         managed = True      # 👈 changer ici
         unique_together = ('ligne', 'asens', 'atypsrv', 'adatserv')
+    
+        permissions = [
+            ("can_add_navette_form", "Can access navette manage page"),
+        ]
 
     def __str__(self):
         return f"Navette {self.id} - {self.ligne.code} ({self.adatserv:%Y-%m-%d})"

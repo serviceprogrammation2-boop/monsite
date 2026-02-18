@@ -29,11 +29,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # -----------------------------
 # 🔐 SECURITY
 # -----------------------------
-SECRET_KEY = 'django-insecure-nq*4!rks9o563=9w^h1obi38rzml$adrnavm+x%0q4u4!q&+mz'
-DEBUG = True     # Mets False ensuite pour la production Render
+SECRET_KEY = os.environ.get("SECRET_KEY")
+DEBUG = False     # Mets False ensuite pour la production Render
 
 # Render accepte tous les domaines du service
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['monsite-vh4i.onrender.com']
 
 
 # -----------------------------

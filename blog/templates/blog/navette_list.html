@@ -10,7 +10,14 @@
 
 <body class="p-4">
     <h1 class="mb-4">Liste des Navettes</h1>
-
+<nav>
+    <ul>
+        {% if perms.blog.can_add_navette_form %}
+            <li><a href="{% url 'navette_manage' %}">Gestion des navettes</a></li>
+        {% endif %}
+        <!-- autres liens pour admin ou autres utilisateurs -->
+    </ul>
+</nav>
     <!-- 🔹 Formulaire de filtrage -->
 
     <form method="get" class="row g-3 mb-4">

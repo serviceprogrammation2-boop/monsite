@@ -21,7 +21,10 @@ from django.utils.timezone import now
 from .models import Ligne, Navette
 from .forms import NavetteFormSet
 from django.db.models import Case, When, IntegerField
+from django.contrib.auth.decorators import login_required, permission_required
 
+@login_required
+@permission_required('blog.can_add_navette_form', raise_exception=True)
 
 
 def navette_manage(request):
