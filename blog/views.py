@@ -57,23 +57,28 @@ def navette_manage(request):
             })
 
     if request.method == "POST":
-        # On enregistre les navettes envoyées
-        formset = NavetteFormSet(request.POST, queryset=Navette.objects.none())
-        if formset.is_valid():
-            formset.save()
-            # Rediriger vers le même jour pour voir et éditer les navettes enregistrées
-            return redirect(f"{request.path}?auto={auto}" if auto else request.path)
-    else:
-        if auto:  # Préparer nouvelles navettes pour le jour sélectionné
-            # On n'affiche pas les anciennes, juste les nouvelles initiales
-            formset = NavetteFormSet(queryset=Navette.objects.none(), initial=initial_data)
-        else:
-            # Afficher toutes les navettes déjà enregistrées pour aujourd'hui
-            formset = NavetteFormSet(queryset=Navette.objects.filter(adatserv=today))
+    formset = NavetteFormSet(request.POST, queryset=Navette.objects.none())
 
-    return render(request, "blog/navette_formset.html", {"formset": formset})
+    if formset.is_valid():
+        instances = formset.save(commit=False)
 
+        for form in formset:
+            if form.has_changed():
+                obj = form.save(commit=False)
 
+                # Sécurisation ForeignKey
+                if not obj.aveh:
+                    obj.aveh = None
+                if not obj.rveh:
+                    obj.rveh = None
+
+                obj.save()
+
+        # Supprimer si nécessaire
+        for obj in formset.deleted_objects:
+            obj.delete()
+
+        return redirect(f"{request.path}?auto={auto}" if auto else request.path)
 
 
 
