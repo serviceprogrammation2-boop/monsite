@@ -29,9 +29,8 @@ from django.contrib.auth.decorators import login_required, permission_required
 
 def navette_manage(request):
     today = now().date()
-    auto = request.GET.get("auto")  # bouton cliqué ?
+    auto = request.GET.get("auto")
 
-    # Codes par type de navettes
     codes_lignes = []
     if auto == "grand jour":
         codes_lignes = [118, 147, 145, 120, 132, 233]
@@ -42,7 +41,6 @@ def navette_manage(request):
     elif auto == "agence":
         codes_lignes = [100, 963, 183, 102, 101, 143, 144]
 
-    # Si l'utilisateur a cliqué sur un bouton, on prépare les données initiales
     initial_data = []
     if codes_lignes:
         preserved_order = Case(
@@ -50,36 +48,47 @@ def navette_manage(request):
             output_field=IntegerField()
         )
         lignes = Ligne.objects.filter(code__in=codes_lignes).order_by(preserved_order)
+
         for ligne in lignes:
             initial_data.append({
                 "ligne": ligne,
                 "adatserv": today,
             })
 
+    # ---------------- POST ----------------
     if request.method == "POST":
-    formset = NavetteFormSet(request.POST, queryset=Navette.objects.none())
+        formset = NavetteFormSet(request.POST, queryset=Navette.objects.none())
 
-    if formset.is_valid():
-        instances = formset.save(commit=False)
+        if formset.is_valid():
+            for form in formset:
+                if form.has_changed():
+                    obj = form.save(commit=False)
 
-        for form in formset:
-            if form.has_changed():
-                obj = form.save(commit=False)
+                    if not obj.aveh:
+                        obj.aveh = None
+                    if not obj.rveh:
+                        obj.rveh = None
 
-                # Sécurisation ForeignKey
-                if not obj.aveh:
-                    obj.aveh = None
-                if not obj.rveh:
-                    obj.rveh = None
+                    obj.save()
 
-                obj.save()
+            for obj in formset.deleted_objects:
+                obj.delete()
 
-        # Supprimer si nécessaire
-        for obj in formset.deleted_objects:
-            obj.delete()
+            return redirect(f"{request.path}?auto={auto}" if auto else request.path)
 
-        return redirect(f"{request.path}?auto={auto}" if auto else request.path)
+    # ---------------- GET ----------------
+    else:
+        if auto:
+            formset = NavetteFormSet(
+                queryset=Navette.objects.none(),
+                initial=initial_data
+            )
+        else:
+            formset = NavetteFormSet(
+                queryset=Navette.objects.filter(adatserv=today)
+            )
 
+    return render(request, "blog/navette_formset.html", {"formset": formset})
 
 
 def liste_navettes(request):
