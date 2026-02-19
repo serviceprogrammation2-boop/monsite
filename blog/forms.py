@@ -6,8 +6,7 @@ from django.db.models import Q
 
 class NavetteForm(forms.ModelForm):
     achauffeur = forms.ModelChoiceField(
-        queryset=Employe.objects.filter(
-        Q(mat_emp__gte='145040', mat_emp__lte='15250')),
+        queryset=Employe.objects.filter(Q(mat_emp__gte='145040', mat_emp__lte='15250')),
         required=False,
         widget=forms.Select(attrs={'class': 'select2'})
     )
@@ -20,20 +19,20 @@ class NavetteForm(forms.ModelForm):
 
     aveh = forms.ModelChoiceField(
         queryset=Equipement.objects.filter(
-        Q(cod_equ__gte='00250', cod_equ__lte='00275') |
-        Q(cod_equ__gte='00500', cod_equ__lte='00529') |
-        Q(cod_equ__gte='02001', cod_equ__lte='04090')
-    ),
+            Q(cod_equ__gte='00250', cod_equ__lte='00275') |
+            Q(cod_equ__gte='00500', cod_equ__lte='00529') |
+            Q(cod_equ__gte='02001', cod_equ__lte='04090')
+        ),
         required=False,
         widget=forms.Select(attrs={'class': 'select2'})
     )
 
     rveh = forms.ModelChoiceField(
         queryset=Equipement.objects.filter(
-        Q(cod_equ__gte='00250', cod_equ__lte='00275') |
-        Q(cod_equ__gte='00500', cod_equ__lte='00529') |
-        Q(cod_equ__gte='02001', cod_equ__lte='04090')
-    ),
+            Q(cod_equ__gte='00250', cod_equ__lte='00275') |
+            Q(cod_equ__gte='00500', cod_equ__lte='00529') |
+            Q(cod_equ__gte='02001', cod_equ__lte='04090')
+        ),
         required=False,
         widget=forms.Select(attrs={'class': 'select2'})
     )
@@ -44,6 +43,14 @@ class NavetteForm(forms.ModelForm):
         widgets = {
             'adatserv': forms.DateInput(attrs={'type': 'date'}),
         }
+
+    # 🔹 Transformer les champs vides en None
+    def clean_aveh(self):
+        return self.cleaned_data.get('aveh') or None
+
+    def clean_rveh(self):
+        return self.cleaned_data.get('rveh') or None
+
 
 NavetteFormSet = modelformset_factory(
     Navette,

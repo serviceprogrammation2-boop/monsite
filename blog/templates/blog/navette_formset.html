@@ -3,33 +3,56 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Gestion Navettes</title>
+    <title>Gestion des Navettes</title>
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
     <style>
-        table { border-collapse: collapse; width: 100%; }
-        th, td { border: 1px solid #000; padding: 5px; text-align: left; }
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        nav ul { list-style-type: none; padding: 0; margin-bottom: 20px; }
+        nav ul li { display: inline-block; margin-right: 15px; }
+        table { border-collapse: collapse; width: 100%; margin-top: 20px; }
+        th, td { border: 1px solid #000; padding: 5px; text-align: left; vertical-align: top; }
         th { background-color: #ccc; }
         .select2-container { width: 100% !important; }
         form.inline { display: inline; margin-right: 10px; }
         button { padding:8px 14px; border:none; border-radius:4px; color:white; cursor:pointer; }
         .btn-grand { background:#198754; }
         .btn-jour, .btn-agence, .btn-nuit { background:#0d6efd; }
+        .errorlist { color: red; margin: 0; padding: 0; list-style: none; font-size: 0.9em; }
+        @media (max-width: 768px) {
+            table, thead, tbody, th, td, tr { display: block; }
+            th { position: absolute; top: -9999px; left: -9999px; }
+            td { border: none; position: relative; padding-left: 50%; margin-bottom: 10px; }
+            td:before { 
+                position: absolute; top: 6px; left: 6px; width: 45%; white-space: nowrap; 
+                font-weight: bold; content: attr(data-label); 
+            }
+        }
     </style>
 </head>
 <body>
+
 <nav>
     <ul>
         {% if perms.blog.can_add_navette_form %}
             <li><a href="{% url 'liste_navettes' %}">Gestion des navettes</a></li>
         {% endif %}
-        <!-- autres liens pour admin ou autres utilisateurs -->
+        <!-- autres liens pour admin ou utilisateurs -->
     </ul>
 </nav>
 
 <h1>Gestion des Navettes</h1>
+
+<!-- Affichage des messages Django -->
+{% if messages %}
+    <ul class="messages">
+        {% for message in messages %}
+            <li>{{ message }}</li>
+        {% endfor %}
+    </ul>
+{% endif %}
 
 <!-- Boutons pour pré-remplir les navettes -->
 <form method="get" class="inline">
@@ -41,11 +64,11 @@
 </form>
 
 <form method="get" class="inline">
-    <button type="submit" name="auto" value="agence" class="btn-agence">🌙 Préparer navettes du agence</button>
+    <button type="submit" name="auto" value="agence" class="btn-agence">🏢 Préparer navettes de l'agence</button>
 </form>
 
 <form method="get" class="inline">
-    <button type="submit" name="auto" value="nuit" class="btn-nuit">🌙 Préparer navettes du nuit</button>
+    <button type="submit" name="auto" value="nuit" class="btn-nuit">🌙 Préparer navettes de nuit</button>
 </form>
 
 <hr>
@@ -57,26 +80,64 @@
 
     <table>
         <thead>
-        <tr>
-            <th>Ligne</th>
-            <th>Date Service</th>
-            <th>Chauffeur (A)</th>
-            <th>Véhicule (A)</th>
-            <th>Chauffeur (R)</th>
-            <th>Véhicule (R)</th>
-        </tr>
+            <tr>
+                <th>Ligne</th>
+                <th>Date Service</th>
+                <th>Chauffeur (A)</th>
+                <th>Véhicule (A)</th>
+                <th>Chauffeur (R)</th>
+                <th>Véhicule (R)</th>
+                {% if formset.can_delete %}
+                    <th>Supprimer</th>
+                {% endif %}
+            </tr>
         </thead>
         <tbody>
-        {% for form in formset %}
-        <tr>
-            <td>{{ form.ligne }}</td>
-            <td>{{ form.adatserv }}</td>
-            <td>{{ form.achauffeur }}</td>
-            <td>{{ form.aveh }}</td>
-            <td>{{ form.rchauffeur }}</td>
-            <td>{{ form.rveh }}</td>
-        </tr>
-        {% endfor %}
+            {% for form in formset %}
+            <tr>
+                <td data-label="Ligne">
+                    {{ form.ligne }}
+                    {% if form.ligne.errors %}
+                        <ul class="errorlist">{% for error in form.ligne.errors %}<li>{{ error }}</li>{% endfor %}</ul>
+                    {% endif %}
+                </td>
+                <td data-label="Date Service">
+                    {{ form.adatserv }}
+                    {% if form.adatserv.errors %}
+                        <ul class="errorlist">{% for error in form.adatserv.errors %}<li>{{ error }}</li>{% endfor %}</ul>
+                    {% endif %}
+                </td>
+                <td data-label="Chauffeur (A)">
+                    {{ form.achauffeur }}
+                    {% if form.achauffeur.errors %}
+                        <ul class="errorlist">{% for error in form.achauffeur.errors %}<li>{{ error }}</li>{% endfor %}</ul>
+                    {% endif %}
+                </td>
+                <td data-label="Véhicule (A)">
+                    {{ form.aveh }}
+                    {% if form.aveh.errors %}
+                        <ul class="errorlist">{% for error in form.aveh.errors %}<li>{{ error }}</li>{% endfor %}</ul>
+                    {% endif %}
+                </td>
+                <td data-label="Chauffeur (R)">
+                    {{ form.rchauffeur }}
+                    {% if form.rchauffeur.errors %}
+                        <ul class="errorlist">{% for error in form.rchauffeur.errors %}<li>{{ error }}</li>{% endfor %}</ul>
+                    {% endif %}
+                </td>
+                <td data-label="Véhicule (R)">
+                    {{ form.rveh }}
+                    {% if form.rveh.errors %}
+                        <ul class="errorlist">{% for error in form.rveh.errors %}<li>{{ error }}</li>{% endfor %}</ul>
+                    {% endif %}
+                </td>
+                {% if formset.can_delete %}
+                    <td data-label="Supprimer">
+                        {{ form.DELETE }}
+                    </td>
+                {% endif %}
+            </tr>
+            {% endfor %}
         </tbody>
     </table>
 
