@@ -29,11 +29,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # -----------------------------
 # 🔐 SECURITY
 # -----------------------------
-SECRET_KEY = os.environ.get("SECRET_KEY")
-DEBUG = False     # Mets False ensuite pour la production Render
+DEBUG = os.environ.get("DEBUG", "True") == "True"
 
-# Render accepte tous les domaines du service
-ALLOWED_HOSTS = ['monsite-vh4i.onrender.com']
+if DEBUG:
+    SECRET_KEY = os.environ.get("SECRET_KEY", "dev-secret-key-1234567890")
+    ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
+else:
+    SECRET_KEY = os.environ["SECRET_KEY"]  # obligatoire en prod
+    ALLOWED_HOSTS = ["monsite-vh4i.onrender.com"]
 
 
 # -----------------------------
