@@ -27,20 +27,25 @@ from django.contrib.auth.decorators import login_required, permission_required
 @permission_required('blog.can_add_navette_form', raise_exception=True)
 
 
+
+
+
+
 def navette_manage(request):
     today = now().date()
     auto = request.GET.get("auto")
 
-    codes_lignes = []
-    if auto == "grand jour":
-        codes_lignes = [118, 147, 145, 120, 132, 233]
-    elif auto == "jour":
-        codes_lignes = [146, 189, 142, 209, 406, 149, 194, 104, 295]
-    elif auto == "nuit":
-        codes_lignes = [961, 518, 117, 507, 500, 504, 506, 503, 512, 501, 502, 509, 510, 964]
-    elif auto == "agence":
-        codes_lignes = [100, 963, 183, 102, 101, 143, 144]
+    # Codes lignes selon type
+    lignes_map = {
+        "grand jour": [118, 147, 145, 120, 132, 233],
+        "jour": [146, 189, 142, 209, 406, 149, 194, 104, 295],
+        "nuit": [961, 518, 117, 507, 500, 504, 506, 503, 512, 501, 502, 509, 510, 964],
+        "agence": [100, 963, 183, 102, 101, 143, 144],
+    }
 
+    codes_lignes = lignes_map.get(auto, [])
+
+    # Préparer initial_data
     initial_data = []
     if codes_lignes:
         preserved_order = Case(
@@ -48,19 +53,17 @@ def navette_manage(request):
             output_field=IntegerField()
         )
         lignes = Ligne.objects.filter(code__in=codes_lignes).order_by(preserved_order)
-
         for ligne in lignes:
             initial_data.append({
-                "ligne": ligne,
+                "ligne": ligne.id,       # On passe l'ID et non l'objet
                 "adatserv": today,
             })
 
     # ---------------- POST ----------------
     if request.method == "POST":
         formset = NavetteFormSet(request.POST, queryset=Navette.objects.none())
-
         if formset.is_valid():
-            # 🔹 Sauvegarder ou mettre à jour les objets
+            # Sauvegarder ou mettre à jour
             for form in formset:
                 if form.has_changed():
                     obj = form.save(commit=False)
@@ -70,26 +73,18 @@ def navette_manage(request):
                         obj.rveh = None
                     obj.save()
 
-            # 🔹 Supprimer les formulaires cochés pour suppression
-            for form in formset.deleted_forms:  # <-- CHANGEMENT clé
+            # Supprimer les formulaires cochés
+            for form in formset.deleted_forms:
                 form.instance.delete()
 
             return redirect(f"{request.path}?auto={auto}" if auto else request.path)
 
     # ---------------- GET ----------------
     else:
-        if auto:
-            formset = NavetteFormSet(
-                queryset=Navette.objects.none(),
-                initial=initial_data
-            )
-        else:
-            formset = NavetteFormSet(
-                queryset=Navette.objects.filter(adatserv=today)
-            )
+        queryset = Navette.objects.none() if auto else Navette.objects.filter(adatserv=today)
+        formset = NavetteFormSet(queryset=queryset, initial=initial_data)
 
     return render(request, "blog/navette_formset.html", {"formset": formset})
-
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from .models import Employe, Equipement
