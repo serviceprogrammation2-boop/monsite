@@ -9,7 +9,8 @@ urlpatterns = [
     path('navettes/gestion/', views.navette_manage, name='navette_manage'),
 
     # URLs pour autocomplete
-    
+    path('ajax/employe/', views.search_employe, name='search_employe'),
+    path('ajax/equipement/', views.search_equipement, name='search_equipement'),
     
 
 

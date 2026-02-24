@@ -90,7 +90,24 @@ def navette_manage(request):
 
     return render(request, "blog/navette_formset.html", {"formset": formset})
 
+from django.http import JsonResponse
+from django.contrib.auth.decorators import login_required
+from .models import Employe, Equipement
 
+@login_required
+def search_employe(request):
+    term = request.GET.get('term', '')
+    
+    employes = Employe.objects.filter(
+        mat_emp__icontains=term
+    )[:20]
+
+    results = [
+        {"id": e.pk, "text": f"{e.mat_emp} - {e.nom_emp}"}
+        for e in employes
+    ]
+
+    return JsonResponse({"results": results})
 def liste_navettes(request):
     start = request.GET.get("start")
     end = request.GET.get("end")
@@ -2591,6 +2608,20 @@ def ligne_pdf(request):
     os.remove(tmp_path)
     return response
 
+@login_required
+def search_equipement(request):
+    term = request.GET.get('term', '')
+    
+    equipements = Equipement.objects.filter(
+        cod_equ__icontains=term
+    )[:20]
+
+    results = [
+        {"id": e.pk, "text": f"{e.cod_equ}"}
+        for e in equipements
+    ]
+
+    return JsonResponse({"results": results})
 
 from datetime import date
 from dateutil.relativedelta import relativedelta
