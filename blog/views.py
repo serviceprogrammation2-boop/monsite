@@ -60,19 +60,19 @@ def navette_manage(request):
         formset = NavetteFormSet(request.POST, queryset=Navette.objects.none())
 
         if formset.is_valid():
+            # 🔹 Sauvegarder ou mettre à jour les objets
             for form in formset:
                 if form.has_changed():
                     obj = form.save(commit=False)
-
                     if not obj.aveh:
                         obj.aveh = None
                     if not obj.rveh:
                         obj.rveh = None
-
                     obj.save()
 
-            for obj in formset.deleted_objects:
-                obj.delete()
+            # 🔹 Supprimer les formulaires cochés pour suppression
+            for form in formset.deleted_forms:  # <-- CHANGEMENT clé
+                form.instance.delete()
 
             return redirect(f"{request.path}?auto={auto}" if auto else request.path)
 
