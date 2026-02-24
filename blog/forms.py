@@ -5,6 +5,7 @@ from .models import Navette, Employe, Equipement
 from django.db.models import Q
 
 class NavetteForm(forms.ModelForm):
+
     achauffeur = forms.ModelChoiceField(
         queryset=Employe.objects.none(),
         required=False,
@@ -36,13 +37,30 @@ class NavetteForm(forms.ModelForm):
             'adatserv': forms.DateInput(attrs={'type': 'date'}),
         }
 
+    # 🔥 AJOUT IMPORTANT
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # Si formulaire soumis (POST)
+        if self.data:
+            self.fields['achauffeur'].queryset = Employe.objects.all()
+            self.fields['rchauffeur'].queryset = Employe.objects.all()
+            self.fields['aveh'].queryset = Equipement.objects.all()
+            self.fields['rveh'].queryset = Equipement.objects.all()
+
+        # Si modification d'une instance existante
+        elif self.instance.pk:
+            self.fields['achauffeur'].queryset = Employe.objects.all()
+            self.fields['rchauffeur'].queryset = Employe.objects.all()
+            self.fields['aveh'].queryset = Equipement.objects.all()
+            self.fields['rveh'].queryset = Equipement.objects.all()
+
     # 🔹 Transformer les champs vides en None
     def clean_aveh(self):
         return self.cleaned_data.get('aveh') or None
 
     def clean_rveh(self):
         return self.cleaned_data.get('rveh') or None
-
 
 NavetteFormSet = modelformset_factory(
     Navette,
