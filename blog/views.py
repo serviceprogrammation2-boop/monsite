@@ -39,7 +39,7 @@ def navette_manage(request):
     lignes_map = {
         "grand jour": [118, 147, 145, 120, 132, 233],
         "jour": [146, 189, 142, 209, 406, 149, 194, 104, 295],
-        "nuit": [961, 518, 117, 507, 500, 504, 506, 503, 512, 501, 502, 509, 510, 964],
+        "nuit": [961, 518, 117, 507, 520, 504, 506, 503, 512, 501, 502, 509, 510, 964, 521],
         "agence": [100, 963, 183, 102, 101, 143, 144],
     }
 
@@ -98,7 +98,7 @@ def search_employe(request):
     )[:20]
 
     results = [
-        {"id": e.pk, "text": f"{e.mat_emp} - {e.nom_emp}"}
+        {"code": e.pk, "text": f"{e.mat_emp} - {e.nom_emp}"}
         for e in employes
     ]
 
