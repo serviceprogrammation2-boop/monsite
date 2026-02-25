@@ -15,8 +15,12 @@ DATABASES = {
     'default': dj_database_url.config(
         default=os.environ.get('DATABASE_URL'),
         conn_max_age=600,
-        ssl_require=os.environ.get('DATABASE_URL', '').startswith('postgresql://ep-')  # SSL seulement pour Neon
+        ssl_require=True
     )
+}
+
+DATABASES['default']['OPTIONS'] = {
+    'sslmode': 'require'
 }
 
 
