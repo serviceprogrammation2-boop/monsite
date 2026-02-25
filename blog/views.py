@@ -55,7 +55,7 @@ def navette_manage(request):
         lignes = Ligne.objects.filter(code__in=codes_lignes).order_by(preserved_order)
         for ligne in lignes:
             initial_data.append({
-                "ligne": ligne.code,       # On passe l'ID et non l'objet
+                "ligne": ligne.code,      
                 "adatserv": today,
             })
 
@@ -85,6 +85,7 @@ def navette_manage(request):
         formset = NavetteFormSet(queryset=queryset, initial=initial_data)
 
     return render(request, "blog/navette_formset.html", {"formset": formset})
+
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from .models import Employe, Equipement

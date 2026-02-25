@@ -41,19 +41,11 @@ class NavetteForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        # Si formulaire soumis (POST)
-        if self.data:
-            self.fields['achauffeur'].queryset = Employe.objects.all()
-            self.fields['rchauffeur'].queryset = Employe.objects.all()
-            self.fields['aveh'].queryset = Equipement.objects.all()
-            self.fields['rveh'].queryset = Equipement.objects.all()
-
-        # Si modification d'une instance existante
-        elif self.instance.pk:
-            self.fields['achauffeur'].queryset = Employe.objects.all()
-            self.fields['rchauffeur'].queryset = Employe.objects.all()
-            self.fields['aveh'].queryset = Equipement.objects.all()
-            self.fields['rveh'].queryset = Equipement.objects.all()
+        # ⚡ Toujours remplir le queryset, peu importe GET/POST
+        self.fields['achauffeur'].queryset = Employe.objects.all()
+        self.fields['rchauffeur'].queryset = Employe.objects.all()
+        self.fields['aveh'].queryset = Equipement.objects.all()
+        self.fields['rveh'].queryset = Equipement.objects.all()
 
     # 🔹 Transformer les champs vides en None
     def clean_aveh(self):
