@@ -5,6 +5,9 @@ from .views import navette_manage
 
 
 urlpatterns = [
+    path('', views.navette_manage, name='home'),   # ✅ page d'accueil
+
+
     path('navettes/', views.liste_navettes, name='liste_navettes'),
     path('navettes/gestion/', views.navette_manage, name='navette_manage'),
 
