@@ -1,17 +1,17 @@
-# settings.py
+# settings.py (version Render optimisée)
 from pathlib import Path
 import os
 import dj_database_url
 from dotenv import load_dotenv
 
 # -----------------------------
-# 🔹 Charger .env local (uniquement en local)
+# Charger .env local (uniquement en local)
 # -----------------------------
 BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(os.path.join(BASE_DIR, ".env.local"))
 
 # -----------------------------
-# 🔐 SECURITY
+# SECURITY
 # -----------------------------
 DEBUG = os.environ.get("DEBUG", "True") == "True"
 
@@ -19,11 +19,14 @@ if DEBUG:
     SECRET_KEY = os.environ.get("SECRET_KEY", "dev-secret-key-1234567890")
     ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
 else:
-    SECRET_KEY = os.environ["SECRET_KEY"]  # obligatoire en prod
+    SECRET_KEY = os.environ["SECRET_KEY"]
     ALLOWED_HOSTS = ["monsite-vh4i.onrender.com"]
 
+# Pour que la redirection login fonctionne
+LOGIN_URL = "/admin/login/"
+
 # -----------------------------
-# 📦 INSTALLED APPS
+# INSTALLED APPS
 # -----------------------------
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -40,7 +43,7 @@ INSTALLED_APPS = [
 ]
 
 # -----------------------------
-# 🗄 DATABASES
+# DATABASES
 # -----------------------------
 DATABASE_URL = os.environ.get("DATABASE_URL")
 
@@ -48,26 +51,22 @@ DATABASES = {
     "default": dj_database_url.config(
         default=DATABASE_URL or "postgres://user:password@127.0.0.1:5432/nomdb_local",
         conn_max_age=600,
-        ssl_require=not DEBUG  # SSL uniquement si prod
+        ssl_require=not DEBUG
     )
 }
 
-# ⚡ Options supplémentaires pour PostgreSQL
+# SSL options pour prod
 if not DEBUG:
     DATABASES["default"]["OPTIONS"] = {"sslmode": "require"}
 else:
     DATABASES["default"]["OPTIONS"] = {"sslmode": "disable"}
 
 # -----------------------------
-# 🌐 ALLOWED HOSTS / OTHER SETTINGS
-# -----------------------------
-LOGIN_URL = '/admin/login/'
-# -----------------------------
-# ⚡ Autres settings classiques
+# MIDDLEWARE
 # -----------------------------
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
-    "whitenoise.middleware.WhiteNoiseMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",  # ⚡ pour servir static files sur Render
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -78,6 +77,9 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = "monsite.urls"
 
+# -----------------------------
+# TEMPLATES
+# -----------------------------
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
@@ -86,7 +88,7 @@ TEMPLATES = [
         "OPTIONS": {
             "context_processors": [
                 "django.template.context_processors.debug",
-                "django.template.context_processors.request",
+                "django.template.context_processors.request",  # ⚡ indispensable pour admin
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
             ],
@@ -97,21 +99,11 @@ TEMPLATES = [
 WSGI_APPLICATION = "monsite.wsgi.application"
 
 # -----------------------------
-# 🔹 Static & Media
+# STATIC & MEDIA
 # -----------------------------
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
-
-# Compression et cache pour WhiteNoise
-STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
-# -----------------------------
-# 🗄 TA BASE ORACLE (SI UTILISÉE)
-# -----------------------------
-ORACLE_GMAO = {
-    'dsn': '10.2.2.2:1521/ORCL',
-    'user': 'gmao',
-    'password': 'gm',
-}
