@@ -37,17 +37,25 @@ def navette_manage(request):
     today = now().date()
     auto = request.GET.get("auto")
 
-    # Codes lignes selon type
+    employes_qs = Employe.objects.only("mat_emp", "nom_emp").filter(
+        mat_emp__range=(14500, 15300)
+    ).order_by("nom_emp")
+
+    equipements_qs = Equipement.objects.filter(
+        Q(cod_equ__range=(250, 275)) |
+        Q(cod_equ__range=(500, 530)) |
+        Q(cod_equ__range=(2001, 4090))
+    )
+
     lignes_map = {
         "grand jour": [118, 147, 145, 120, 132, 233],
         "jour": [146, 189, 142, 209, 406, 149, 194, 104, 295],
-        "nuit": [961, 518, 117, 507, 520, 504, 506, 503, 512, 501, 502, 509, 510, 964, 521],
+        "nuit": [961, 518, 117, 507, 520, 504, 506, 503, 512, 501, 502, 509, 964, 521],
         "agence": [100, 963, 183, 102, 101, 143, 144],
     }
 
     codes_lignes = lignes_map.get(auto, [])
 
-    # Préparer initial_data
     initial_data = []
     if codes_lignes:
         preserved_order = Case(
@@ -56,23 +64,14 @@ def navette_manage(request):
         )
         lignes = Ligne.objects.filter(code__in=codes_lignes).order_by(preserved_order)
         for ligne in lignes:
-            initial_data.append({
-                "ligne": ligne.code,
-                "adatserv": today,
-            })
+            initial_data.append({"ligne": ligne.code, "adatserv": today})
 
-    # ---------------- POST ----------------
     if request.method == "POST":
         formset = NavetteFormSet(request.POST, queryset=Navette.objects.none())
 
-        # 🔹 Injecter dynamiquement le queryset des chauffeurs pour chaque formulaire
         for form in formset.forms:
-            for field_name in ['achauffeur', 'rchauffeur']:
-                try:
-                    selected_id = int(form.data.get(form.add_prefix(field_name)))
-                    form.fields[field_name].queryset = Employe.objects.filter(pk=selected_id)
-                except (TypeError, ValueError):
-                    form.fields[field_name].queryset = Employe.objects.all()
+            form.fields['achauffeur'].queryset = employes_qs
+            form.fields['rchauffeur'].queryset = employes_qs
 
         if formset.is_valid():
             for form in formset:
@@ -83,21 +82,22 @@ def navette_manage(request):
                     if not obj.rveh:
                         obj.rveh = None
                     obj.save()
-            # Supprimer formulaires cochés
+
             for form in formset.deleted_forms:
                 form.instance.delete()
 
             return redirect(f"{request.path}?auto={auto}" if auto else request.path)
 
-    # ---------------- GET ----------------
     else:
         queryset = Navette.objects.none() if auto else Navette.objects.filter(adatserv=today)
+
         formset = NavetteFormSet(queryset=queryset, initial=initial_data)
 
-        # 🔹 Remplir les chauffeurs pour l'affichage
         for form in formset.forms:
-            form.fields['achauffeur'].queryset = Employe.objects.all()
-            form.fields['rchauffeur'].queryset = Employe.objects.all()
+            form.fields['achauffeur'].queryset = employes_qs
+            form.fields['rchauffeur'].queryset = employes_qs
+            form.fields['aveh'].queryset = equipements_qs
+            form.fields['rveh'].queryset = equipements_qs
 
     return render(request, "blog/navette_formset.html", {"formset": formset})
 from django.http import JsonResponse
