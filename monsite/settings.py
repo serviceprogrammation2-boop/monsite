@@ -61,8 +61,7 @@ else:
 # -----------------------------
 # 🌐 ALLOWED HOSTS / OTHER SETTINGS
 # -----------------------------
-# Par défaut, déjà géré ci-dessus
-
+LOGIN_URL = '/admin/login/'
 # -----------------------------
 # ⚡ Autres settings classiques
 # -----------------------------
