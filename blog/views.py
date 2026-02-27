@@ -104,16 +104,25 @@ from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from .models import Employe, Equipement
 
+from django.db.models import Q
+from django.http import JsonResponse
+from django.contrib.auth.decorators import login_required
+from blog.models import Employe
+
 @login_required
 def search_employe(request):
-    term = request.GET.get('term', '')
+    term = request.GET.get('term', '').strip()
     
-    employes = Employe.objects.filter(
-        mat_emp__icontains=term
-    )[:20]
+    if term:
+        employes = Employe.objects.filter(
+            Q(mat_emp__icontains=term) |
+            Q(nom_emp__icontains=term)
+        ).order_by('nom_emp')[:20]  # limite 20 pour performance
+    else:
+        employes = Employe.objects.none()
 
     results = [
-        {"id": e.pk, "text": f"{e.mat_emp} - {e.nom_emp}"}
+        {"id": e.pk, "text": f"{e.mat_emp} - {e.nom_emp or '-'}"}
         for e in employes
     ]
 
