@@ -1,0 +1,12 @@
+{% extends "admin/base_site.html" %}
+
+{% block branding %}
+    {{ block.super }}
+    {% if user.is_staff %}
+        <a href="/admin/backup-db/" 
+           style="background:#dc3545; color:white; padding:6px 12px; 
+                  border-radius:5px; text-decoration:none; margin-left:15px;">
+            📥 Backup Base
+        </a>
+    {% endif %}
+{% endblock %}
