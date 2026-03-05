@@ -1,12 +1,11 @@
 from django.urls import path
 from . import views, reports
 from .views import navette_manage
-from .views import download_backup
 
 
 
 urlpatterns = [
-     path("backup/", download_backup, name="download_backup"),
+    
     path('', views.navette_manage, name='home'),   # ✅ page d'accueil
 
 

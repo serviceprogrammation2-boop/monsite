@@ -26,32 +26,6 @@ from django.contrib.auth.decorators import login_required, permission_required
 import subprocess
 import tempfile
 import os
-from django.http import FileResponse
-from django.conf import settings
-from django.contrib.admin.views.decorators import staff_member_required
-
-@staff_member_required
-def download_backup(request):
-    database_url = os.environ.get("DATABASE_URL")
-
-    tmp_file = tempfile.NamedTemporaryFile(delete=False)
-
-    subprocess.run([
-        "pg_dump",
-        database_url,
-        "-f",
-        tmp_file.name
-    ])
-
-    return FileResponse(
-        open(tmp_file.name, 'rb'),
-        as_attachment=True,
-        filename="backup.sql"
-    )
-
-
-
-
 
 @login_required
 @permission_required('blog.can_add_navette_form', raise_exception=True)
