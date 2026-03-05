@@ -9,47 +9,6 @@ from rangefilter.filters import DateRangeFilter
 from .models import Navette, Ligne, Employe
 
 
-import subprocess
-import tempfile
-import os
-from django.http import FileResponse
-from django.urls import path
-from django.contrib import admin
-
-def download_backup(request):
-    database_url = os.environ.get("DATABASE_URL")
-
-    tmp_file = tempfile.NamedTemporaryFile(delete=False)
-
-    subprocess.run([
-        "pg_dump",
-        database_url,
-        "-f",
-        tmp_file.name
-    ])
-
-    return FileResponse(
-        open(tmp_file.name, 'rb'),
-        as_attachment=True,
-        filename="backup.sql"
-    )
-# -----------------------------
-# Form et Formset pour ajouter plusieurs Navettes
-# -----------------------------
-class NavetteForm(forms.ModelForm):
-    class Meta:
-        model = Navette
-        fields = ['ligne', 'adatserv', 'achauffeur', 'aveh', 'rveh', 'rem']
-
-# Formset pour tableau horizontal
-NavetteFormSet = modelformset_factory(
-    Navette,
-    form=NavetteForm,
-    extra=5,       # 5 lignes vides pour ajouter
-    can_delete=False
-)
-
-# -----------------------------
 # Admin Navette
 # -----------------------------
 @admin.register(Navette)
