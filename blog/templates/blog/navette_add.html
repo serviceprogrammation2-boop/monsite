@@ -24,12 +24,9 @@
             td { padding-left: 50%; position: relative; }
             td:before { content: attr(data-label); position: absolute; left: 10px; font-weight: bold; }
         }
-                /* ✅ Force l'affichage du champ de recherche sur mobile */
-        .select2-search--dropdown {
-            display: block !important;
-        }
+        /* ✅ Fix zoom iOS qui bloque le clavier */
         .select2-search__field {
-            font-size: 16px !important; /* évite le zoom automatique iOS */
+            font-size: 16px !important;
         }
     </style>
 </head>
@@ -85,7 +82,10 @@
         </tbody>
     </table>
 
-    
+    <div class="buttons">
+        <button type="submit" class="btn btn-save">➕ Ajouter</button>
+        <a href="{% url 'liste_navettes' %}" class="btn btn-back">⬅ Retour à la liste</a>
+    </div>
     <div class="buttons">
         <button type="submit" name="action" value="save" class="btn btn-save">💾 Enregistrer</button>
         <button type="submit" name="action" value="save_another" class="btn" style="background:#fd7e14;">➕ Enregistrer un autre</button>
@@ -98,53 +98,51 @@ $(document).ready(function() {
 
     function initSelect2Employe(selector) {
         $(selector).each(function() {
-            var $el = $(this);
-            var selectedId = $el.val();
-            var selectedText = $el.find('option:selected').text();
-            if (selectedId && selectedText && selectedText !== '---------') {
-                $el.append(new Option(selectedText, selectedId, true, true));
-            }
-            $el.select2({
+            $(this).select2({
                 ajax: {
                     url: "{% url 'search_employe' %}",
                     dataType: 'json', delay: 250,
                     data: function(p) { return { term: p.term }; },
                     processResults: function(d) { return d; }
                 },
-                minimumInputLength: 0,
+                minimumInputLength: 1,
                 allowClear: true,
                 placeholder: "",
                 width: '100%'
-            }).on('select2:open', function() {
-                document.querySelector('.select2-search__field').focus();
             });
         });
     }
 
-function initSelect2Equipement(selector) {
-    $(selector).each(function() {
-        var $el = $(this);
-        var selectedId = $el.val();
-        var selectedText = $el.find('option:selected').text();
-        if (selectedId && selectedText && selectedText !== '---------') {
-            $el.append(new Option(selectedText, selectedId, true, true));
-        }
-        $el.select2({
-            ajax: {
-                url: "{% url 'search_equipement' %}",
-                dataType: 'json', delay: 250,
-                data: function(p) { return { term: p.term }; },
-                processResults: function(d) { return d; }
-            },
-            minimumInputLength: 0,
-            allowClear: true,
-            placeholder: "",
-            width: '100%'
-        }).on('select2:open', function() {
-            document.querySelector('.select2-search__field').focus();
+    function initSelect2Equipement(selector) {
+        $(selector).each(function() {
+            $(this).select2({
+                ajax: {
+                    url: "{% url 'search_equipement' %}",
+                    dataType: 'json', delay: 250,
+                    data: function(p) { return { term: p.term }; },
+                    processResults: function(d) { return d; }
+                },
+                minimumInputLength: 1,
+                allowClear: true,
+                placeholder: "",
+                width: '100%'
+            });
         });
+    }
+$(document).ready(function() {
+
+    initSelect2Employe('.select2-ajax-employe');
+    initSelect2Equipement('.select2-ajax-equipement');
+
+    // ✅ Fix clavier mobile
+    $(document).on('select2:open', function() {
+        setTimeout(function() {
+            var searchField = document.querySelector('.select2-container--open .select2-search__field');
+            if (searchField) searchField.focus();
+        }, 100);
     });
-}
+
+});
     initSelect2Employe('.select2-ajax-employe');
     initSelect2Equipement('.select2-ajax-equipement');
 });
