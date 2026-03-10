@@ -89,6 +89,13 @@
                 font-weight: bold;
             }
         }
+                /* ✅ Force l'affichage du champ de recherche sur mobile */
+        .select2-search--dropdown {
+            display: block !important;
+        }
+        .select2-search__field {
+            font-size: 16px !important; /* évite le zoom automatique iOS */
+        }
     </style>
 </head>
 <body>
@@ -145,10 +152,12 @@ $(document).ready(function() {
                     data: function(p) { return { term: p.term }; },
                     processResults: function(d) { return d; }
                 },
-                minimumInputLength: 1,
+                minimumInputLength: 0,
                 allowClear: true,
                 placeholder: "",
                 width: '100%'
+            }).on('select2:open', function() {
+                document.querySelector('.select2-search__field').focus();
             });
         });
     }
@@ -168,10 +177,12 @@ $(document).ready(function() {
                     data: function(p) { return { term: p.term }; },
                     processResults: function(d) { return d; }
                 },
-                minimumInputLength: 1,
+                minimumInputLength: 0,
                 allowClear: true,
                 placeholder: "",
                 width: '100%'
+            }).on('select2:open', function() {
+                document.querySelector('.select2-search__field').focus();
             });
         });
     }

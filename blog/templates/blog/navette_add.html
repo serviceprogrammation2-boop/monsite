@@ -24,6 +24,13 @@
             td { padding-left: 50%; position: relative; }
             td:before { content: attr(data-label); position: absolute; left: 10px; font-weight: bold; }
         }
+                /* ✅ Force l'affichage du champ de recherche sur mobile */
+        .select2-search--dropdown {
+            display: block !important;
+        }
+        .select2-search__field {
+            font-size: 16px !important; /* évite le zoom automatique iOS */
+        }
     </style>
 </head>
 <body>
@@ -91,38 +98,53 @@ $(document).ready(function() {
 
     function initSelect2Employe(selector) {
         $(selector).each(function() {
-            $(this).select2({
+            var $el = $(this);
+            var selectedId = $el.val();
+            var selectedText = $el.find('option:selected').text();
+            if (selectedId && selectedText && selectedText !== '---------') {
+                $el.append(new Option(selectedText, selectedId, true, true));
+            }
+            $el.select2({
                 ajax: {
                     url: "{% url 'search_employe' %}",
                     dataType: 'json', delay: 250,
                     data: function(p) { return { term: p.term }; },
                     processResults: function(d) { return d; }
                 },
-                minimumInputLength: 1,
+                minimumInputLength: 0,
                 allowClear: true,
                 placeholder: "",
                 width: '100%'
+            }).on('select2:open', function() {
+                document.querySelector('.select2-search__field').focus();
             });
         });
     }
 
-    function initSelect2Equipement(selector) {
-        $(selector).each(function() {
-            $(this).select2({
-                ajax: {
-                    url: "{% url 'search_equipement' %}",
-                    dataType: 'json', delay: 250,
-                    data: function(p) { return { term: p.term }; },
-                    processResults: function(d) { return d; }
-                },
-                minimumInputLength: 1,
-                allowClear: true,
-                placeholder: "",
-                width: '100%'
-            });
+function initSelect2Equipement(selector) {
+    $(selector).each(function() {
+        var $el = $(this);
+        var selectedId = $el.val();
+        var selectedText = $el.find('option:selected').text();
+        if (selectedId && selectedText && selectedText !== '---------') {
+            $el.append(new Option(selectedText, selectedId, true, true));
+        }
+        $el.select2({
+            ajax: {
+                url: "{% url 'search_equipement' %}",
+                dataType: 'json', delay: 250,
+                data: function(p) { return { term: p.term }; },
+                processResults: function(d) { return d; }
+            },
+            minimumInputLength: 0,
+            allowClear: true,
+            placeholder: "",
+            width: '100%'
+        }).on('select2:open', function() {
+            document.querySelector('.select2-search__field').focus();
         });
-    }
-
+    });
+}
     initSelect2Employe('.select2-ajax-employe');
     initSelect2Equipement('.select2-ajax-equipement');
 });
