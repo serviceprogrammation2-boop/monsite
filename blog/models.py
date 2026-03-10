@@ -110,9 +110,11 @@ class Navette(models.Model):
         db_column='ligne',
         on_delete=models.DO_NOTHING
     )
-    asens = models.CharField(max_length=5)
-    atypsrv = models.CharField(max_length=5)
-    nda = models.IntegerField()
+    asens = models.CharField(max_length=5, default='A', null=True, blank=True)
+
+    atypsrv = models.CharField(max_length=5, null=True, blank=True)
+
+    nda = models.IntegerField(null=True, blank=True)
     adatserv = models.DateField(null=True, blank=True)
     achauffeur = models.ForeignKey(
         Employe,

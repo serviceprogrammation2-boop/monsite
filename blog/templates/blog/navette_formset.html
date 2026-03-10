@@ -17,8 +17,8 @@
         th { background-color: #ccc; }
         .select2-container { width: 100% !important; }
         form.inline { display: inline; margin-right: 10px; }
-        button { padding:8px 14px; border:none; border-radius:4px; color:white; cursor:pointer; }
-        .btn-grand { background:#198754; }
+        button { padding:8px 14px; border:none; border-radius:4px; color:rgb(255, 255, 255); cursor:pointer; }
+        .btn-grand { background:#198743; }
         .btn-jour, .btn-agence, .btn-nuit { background:#0d6efd; }
         .errorlist { color: red; margin: 0; padding: 0; list-style: none; font-size: 0.9em; }
         @media (max-width: 768px) {
@@ -60,7 +60,7 @@
 </form>
 
 <form method="get" class="inline">
-    <button type="submit" name="auto" value="jour" class="btn-jour">🌙 Préparer navettes du jour</button>
+    <button type="submit" name="auto" value="jour" class="btn-grand">➕ Préparer navettes du jour</button>
 </form>
 
 <form method="get" class="inline">
@@ -76,6 +76,8 @@
 <!-- Formset Navettes -->
 <form method="post">
     {% csrf_token %}
+    <input type="hidden" name="auto_value" value="{{ auto|default:'' }}">
+    
     {{ formset.management_form }}
 
     <table>
@@ -142,7 +144,8 @@
     </table>
 
     <br>
-    <button type="submit">💾 Enregistrer</button>
+    <button type="submit" class="btn-grand">💾 Enregistrer</button>
+    
 </form>
 
 <script>

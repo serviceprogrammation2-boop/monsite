@@ -165,6 +165,8 @@
                     <th>REM</th>
                     <th>Sens</th>
                     <th>NDR</th>
+                    <th>Action</th>
+                    <th>Action1</th>
                 </tr>
             </thead>
             <tbody>
@@ -185,6 +187,21 @@
                     <td>{{ nav.rem }}</td>
                     <td>{{ nav.asens }}</td>
                     <td>{{ nav.ndr }}</td>
+                    
+                    <td>
+                        <a href="{% url 'navette_edit' nav.id %}"
+                        style="background:#007bff;color:white;padding:4px 8px;border-radius:4px;text-decoration:none;">
+                        Modifier
+                        
+                    </td>
+                    <td>
+                        
+                        <a href="{% url 'navette_add' %}"
+                        style="background:#28a745;color:white;padding:4px 8px;border-radius:4px;text-decoration:none;margin-left:5px;">
+                        Ajouter
+                        </a>
+                    </td>
+                    
                 </tr>
                 {% empty %}
                 <tr>

@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    
+    <!-- CSS Select2 -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+
+<!-- jQuery -->
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+
+<!-- JS Select2 -->
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+    <meta charset="UTF-8">
+    <title>Modifier Navette</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+        h2 {
+            color: #007bff;
+            margin-bottom: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        th, td {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background: #007bff;
+            color: white;
+            text-align: left;
+        }
+        input, select {
+            width: 100%;
+            padding: 6px 8px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+        }
+        .errorlist {
+            color: red;
+            margin: 4px 0 0;
+            padding: 0;
+            list-style: none;
+        }
+        .buttons {
+            margin-top: 20px;
+        }
+        .btn {
+            padding: 6px 12px;
+            border-radius: 4px;
+            color: white;
+            text-decoration: none;
+            margin-right: 10px;
+            display: inline-block;
+        }
+        .btn-save {
+            background: #28a745;
+            border: none;
+            cursor: pointer;
+        }
+        .btn-back {
+            background: #6c757d;
+        }
+        /* Responsive */
+        @media (max-width: 600px) {
+            table, thead, tbody, th, td, tr {
+                display: block;
+            }
+            th {
+                display: none;
+            }
+            td {
+                padding-left: 50%;
+                position: relative;
+            }
+            td:before {
+                content: attr(data-label);
+                position: absolute;
+                left: 10px;
+                font-weight: bold;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<h2>Modifier Navette</h2>
+
+<form method="post">
+    {% csrf_token %}
+    <table>
+        <thead>
+            <tr>
+                <th>Ligne</th>
+                <th>Date Service</th>
+                <th>Chauffeur (A)</th>
+                <th>Véhicule (A)</th>
+                <th>Chauffeur (R)</th>
+                <th>Véhicule (R)</th>
+                <th>Sens</th>  {# ✅ ajouté #}
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td data-label="Ligne">{{ form.ligne }}</td>
+                <td data-label="Date Service">{{ form.adatserv }}</td>
+                <td data-label="Chauffeur (A)">{{ form.achauffeur }}</td>
+                <td data-label="Véhicule (A)">{{ form.aveh }}</td>
+                <td data-label="Chauffeur (R)">{{ form.rchauffeur }}</td>
+                <td data-label="Véhicule (R)">{{ form.rveh }}</td>
+                <td data-label="Sens">{{ form.asens }}</td>  {# ✅ ajouté #}
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="buttons">
+        <button type="submit" class="btn btn-save">Enregistrer</button>
+        <a href="{% url 'liste_navettes' %}" class="btn btn-back">⬅ Retour à la liste</a>
+    </div>
+</form>
+<script>
+$(document).ready(function() {
+
+    function initSelect2Employe(selector) {
+        $(selector).each(function() {
+            var $el = $(this);
+            var selectedId = $el.val();
+            var selectedText = $el.find('option:selected').text();
+            if (selectedId && selectedText && selectedText !== '---------') {
+                $el.append(new Option(selectedText, selectedId, true, true));
+            }
+            $el.select2({
+                ajax: {
+                    url: "{% url 'search_employe' %}",
+                    dataType: 'json', delay: 250,
+                    data: function(p) { return { term: p.term }; },
+                    processResults: function(d) { return d; }
+                },
+                minimumInputLength: 1,
+                allowClear: true,
+                placeholder: "",
+                width: '100%'
+            });
+        });
+    }
+
+    function initSelect2Equipement(selector) {
+        $(selector).each(function() {
+            var $el = $(this);
+            var selectedId = $el.val();
+            var selectedText = $el.find('option:selected').text();
+            if (selectedId && selectedText && selectedText !== '---------') {
+                $el.append(new Option(selectedText, selectedId, true, true));
+            }
+            $el.select2({
+                ajax: {
+                    url: "{% url 'search_equipement' %}",
+                    dataType: 'json', delay: 250,
+                    data: function(p) { return { term: p.term }; },
+                    processResults: function(d) { return d; }
+                },
+                minimumInputLength: 1,
+                allowClear: true,
+                placeholder: "",
+                width: '100%'
+            });
+        });
+    }
+
+    initSelect2Employe('.select2-ajax-employe');
+    initSelect2Equipement('.select2-ajax-equipement');
+});
+</script>
+</body>
+</html>

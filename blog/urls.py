@@ -1,13 +1,14 @@
 from django.urls import path
 from . import views, reports
-from .views import navette_manage
+from .views import navette_manage, navette_edit, navette_add
 
 
 
 urlpatterns = [
     
     path('', views.navette_manage, name='home'),   # ✅ page d'accueil
-
+    path('navette/<int:id>/edit/', views.navette_edit, name='navette_edit'),
+    path('navettes/ajouter/', navette_add, name='navette_add'),
 
     path('navettes/', views.liste_navettes, name='liste_navettes'),
     path('navettes/gestion/', views.navette_manage, name='navette_manage'),

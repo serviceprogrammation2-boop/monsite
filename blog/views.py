@@ -27,29 +27,44 @@ import subprocess
 import tempfile
 import os
 
+from django.shortcuts import get_object_or_404, redirect, render
+from .forms import NavetteEditForm
+def navette_add(request):
+    if request.method == "POST":
+        form = NavetteEditForm(request.POST)
+        if form.is_valid():
+            form.save()
+            # ✅ Si "Enregistrer un autre" → formulaire vide
+            if request.POST.get("action") == "save_another":
+                return redirect('navette_add')
+            return redirect('liste_navettes')
+    else:
+        form = NavetteEditForm()
+
+    return render(request, 'blog/navette_add.html', {'form': form})
+def navette_edit(request, id):
+    navette = get_object_or_404(Navette, id=id)
+
+    if request.method == "POST":
+        form = NavetteEditForm(request.POST, instance=navette)
+        if form.is_valid():
+            form.save()
+            return redirect('liste_navettes')
+    else:
+        form = NavetteEditForm(instance=navette)
+
+    return render(request, 'blog/navette_edit.html', {'form': form})
+
 @login_required
 @permission_required('blog.can_add_navette_form', raise_exception=True)
 
 
-
-
-
-
-
-
 def navette_manage(request):
     today = now().date()
-    auto = request.GET.get("auto")
+    auto = request.GET.get("auto") or request.POST.get("auto_value")
 
-    employes_qs = Employe.objects.only("mat_emp", "nom_emp").filter(
-        mat_emp__range=(14500, 15300)
-    ).order_by("nom_emp")
-
-    equipements_qs = Equipement.objects.filter(
-        Q(cod_equ__range=(250, 275)) |
-        Q(cod_equ__range=(500, 530)) |
-        Q(cod_equ__range=(2001, 4090))
-    )
+    employes_qs = Employe.objects.all().order_by("nom_emp")
+    equipements_qs = Equipement.objects.all()
 
     lignes_map = {
         "grand jour": [118, 147, 145, 120, 132, 233],
@@ -57,9 +72,16 @@ def navette_manage(request):
         "nuit": [961, 518, 117, 507, 520, 504, 506, 503, 512, 501, 502, 509, 964, 521],
         "agence": [100, 963, 183, 102, 101, 143, 144],
     }
-
     codes_lignes = lignes_map.get(auto, [])
 
+    def configure_formset(formset):
+        for form in formset.forms:
+            form.fields['achauffeur'].queryset = employes_qs
+            form.fields['rchauffeur'].queryset = employes_qs
+            form.fields['aveh'].queryset = equipements_qs
+            form.fields['rveh'].queryset = equipements_qs
+
+    # ✅ Même niveau que configure_formset
     initial_data = []
     if codes_lignes:
         preserved_order = Case(
@@ -67,44 +89,78 @@ def navette_manage(request):
             output_field=IntegerField()
         )
         lignes = Ligne.objects.filter(code__in=codes_lignes).order_by(preserved_order)
-        for ligne in lignes:
-            initial_data.append({"ligne": ligne.code, "adatserv": today})
 
+        for ligne in lignes:
+            derniere = Navette.objects.filter(
+                ligne=ligne,
+                adatserv__lt=today
+            ).order_by('-adatserv').first()
+
+            initial = {
+                "ligne": ligne,
+                "adatserv": today,
+            }
+
+            if derniere:
+                initial["rchauffeur"] = derniere.rchauffeur
+                initial["rveh"] = derniere.rveh
+
+            initial_data.append(initial)
+
+    # ✅ if/else au niveau de la fonction, pas dans le if codes_lignes
     if request.method == "POST":
         formset = NavetteFormSet(request.POST, queryset=Navette.objects.none())
-
-        for form in formset.forms:
-            form.fields['achauffeur'].queryset = employes_qs
-            form.fields['rchauffeur'].queryset = employes_qs
+        configure_formset(formset)
 
         if formset.is_valid():
             for form in formset:
-                if form.has_changed():
-                    obj = form.save(commit=False)
-                    if not obj.aveh:
-                        obj.aveh = None
-                    if not obj.rveh:
-                        obj.rveh = None
-                    obj.save()
+                cd = form.cleaned_data
+                if not cd or cd.get("DELETE") or not cd.get("ligne") or not cd.get("adatserv"):
+                    continue
+
+                obj = form.save(commit=False)
+
+                if auto == "nuit":
+                    obj.atypsrv = "N"
+                    obj.nda = 2
+                elif auto == "jour":
+                    obj.atypsrv = "J"
+                    obj.nda = 1
+                elif auto == "grand jour":
+                    obj.atypsrv = "G"
+                    obj.nda = 1
+                elif auto == "agence":
+                    obj.atypsrv = "A"
+                    obj.nda = 1
+
+                if not obj.asens:
+                    obj.asens = "A"
+
+                Navette.objects.filter(
+                    ligne=obj.ligne,
+                    asens=obj.asens,
+                    atypsrv=obj.atypsrv,
+                    adatserv=obj.adatserv
+                ).delete()
+
+                obj.save()
 
             for form in formset.deleted_forms:
-                form.instance.delete()
-
-            return redirect(f"{request.path}?auto={auto}" if auto else request.path)
+                if form.instance.pk:
+                    form.instance.delete()
+            
+            # Alternative sans reverse()
+            return redirect('/navettes/gestion/')  # ← votre chemin exact
 
     else:
-        queryset = Navette.objects.none() if auto else Navette.objects.filter(adatserv=today)
-
+        # ✅ Toujours vide au chargement
+        queryset = Navette.objects.none()
         formset = NavetteFormSet(queryset=queryset, initial=initial_data)
+        configure_formset(formset)
 
-        for form in formset.forms:
-            form.fields['achauffeur'].queryset = employes_qs
-            form.fields['rchauffeur'].queryset = employes_qs
-            form.fields['aveh'].queryset = equipements_qs
-            form.fields['rveh'].queryset = equipements_qs
-
-    return render(request, "blog/navette_formset.html", {"formset": formset})
-from django.http import JsonResponse
+    # ✅ Une seule parenthèse fermante
+    return render(request, "blog/navette_formset.html", {"formset": formset, "auto": auto})
+    
 from django.contrib.auth.decorators import login_required
 from .models import Employe, Equipement
 
