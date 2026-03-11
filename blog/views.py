@@ -194,8 +194,9 @@ def liste_navettes(request):
     aveh = request.GET.get("aveh")
     sortie = request.GET.get("sortie")
 
-    navettes = Navette.objects.all().order_by('-adatserv')  # 🔽 tri décroissant
+    navettes = Navette.objects.all().order_by('-adatserv')
 
+    # ✅ Par défaut filtrer sur aujourd'hui si aucune date fournie
     if start and end:
         try:
             start_date = datetime.strptime(start, "%Y-%m-%d").date()
@@ -203,6 +204,11 @@ def liste_navettes(request):
             navettes = navettes.filter(adatserv__range=[start_date, end_date])
         except ValueError:
             pass
+    else:
+        today = now().date()
+        navettes = navettes.filter(adatserv=today)
+        start = str(today)
+        end = str(today)
 
     if achauffeur:
         navettes = navettes.filter(Q(achauffeur__mat_emp__icontains=achauffeur))
@@ -216,17 +222,15 @@ def liste_navettes(request):
     page_obj = paginator.get_page(page_number)
 
     return render(request, "blog/navette_list.html", {
-    "page_obj": page_obj,
-    "navettes": page_obj.object_list,
-    "start": start or "",
-    "end": end or "",
-    "achauffeur": achauffeur or "",
-    "aveh": aveh or "",
-    "sortie": sortie or "",
-    "request": request,  # 👈 essentiel !
-})
-
-    
+        "page_obj": page_obj,
+        "navettes": page_obj.object_list,
+        "start": start or "",
+        "end": end or "",
+        "achauffeur": achauffeur or "",
+        "aveh": aveh or "",
+        "sortie": sortie or "",
+        "request": request,
+    })
 
 
 def navettes_pdf(request):
