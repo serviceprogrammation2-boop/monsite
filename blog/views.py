@@ -187,6 +187,16 @@ def search_employe(request):
     ]
 
     return JsonResponse({"results": results})
+
+def search_ligne(request):
+    term = request.GET.get('term', '')
+    lignes = Ligne.objects.filter(
+        Q(code__icontains=term) | Q(origine__icontains=term) | Q(dest__icontains=term)
+    ).order_by('code')[:20]
+    
+    results = [{'id': l.code, 'text': str(l)} for l in lignes]
+    return JsonResponse({'results': results})
+
 def liste_navettes(request):
     start = request.GET.get("start")
     end = request.GET.get("end")

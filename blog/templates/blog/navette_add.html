@@ -90,15 +90,27 @@
 <script>
 $(document).ready(function() {
 
-    // ✅ Select2 local pour ligne
-    $('.select2-ligne').select2({
-        placeholder: "Rechercher une ligne...",
-        allowClear: true,
-        width: '100%',
-        language: {
-            noResults: function() { return "Aucune ligne trouvée"; },
-            searching: function() { return "Recherche..."; }
+
+    // ✅ Select2 AJAX pour ligne
+    $('.select2-ligne').each(function() {
+        var $el = $(this);
+        var selectedId = $el.val();
+        var selectedText = $el.find('option:selected').text();
+        if (selectedId && selectedText && selectedText !== '---------') {
+            $el.append(new Option(selectedText, selectedId, true, true));
         }
+        $el.select2({
+            ajax: {
+                url: "{% url 'search_ligne' %}",
+                dataType: 'json', delay: 250,
+                data: function(p) { return { term: p.term }; },
+                processResults: function(d) { return d; }
+            },
+            minimumInputLength: 1,
+            allowClear: true,
+            placeholder: "Rechercher une ligne...",
+            width: '100%'
+        });
     });
 
     function initSelect2Employe(selector) {
