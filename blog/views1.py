@@ -168,6 +168,7 @@ from django.db.models import Q
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from blog.models import Employe
+from .models import Employe, Equipement, Ligne
 
 @login_required
 def search_employe(request):
