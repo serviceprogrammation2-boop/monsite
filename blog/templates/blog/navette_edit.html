@@ -89,9 +89,14 @@
                 font-weight: bold;
             }
         }
-                /* ✅ Fix zoom iOS qui bloque le clavier */
+        /* ✅ Fix zoom iOS qui bloque le clavier */
         .select2-search__field {
             font-size: 16px !important;
+        }
+
+        /* ✅ Force Select2 sur mobile au lieu du select natif */
+        .select2-container {
+            width: 100% !important;
         }
     </style>
 </head>
@@ -133,6 +138,21 @@
 </form>
 <script>
 $(document).ready(function() {
+
+    // ✅ Select2 ligne
+    $('.select2-ligne').select2({
+        ajax: {
+            url: "{% url 'search_ligne' %}",
+            dataType: 'json', delay: 250,
+            data: function(p) { return { term: p.term }; },
+            processResults: function(d) { return d; }
+        },
+        minimumInputLength: 1,
+        allowClear: true,
+        placeholder: "Rechercher une ligne...",
+        width: '100%',
+        dropdownParent: $('body')
+    });
 
     function initSelect2Employe(selector) {
         $(selector).each(function() {
@@ -179,7 +199,6 @@ $(document).ready(function() {
             });
         });
     }
-$(document).ready(function() {
 
     initSelect2Employe('.select2-ajax-employe');
     initSelect2Equipement('.select2-ajax-equipement');
@@ -193,9 +212,7 @@ $(document).ready(function() {
     });
 
 });
-    initSelect2Employe('.select2-ajax-employe');
-    initSelect2Equipement('.select2-ajax-equipement');
-});
+    
 </script>
 </body>
 </html>

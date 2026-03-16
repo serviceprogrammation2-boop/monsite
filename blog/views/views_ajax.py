@@ -35,5 +35,6 @@ def search_ligne(request):
     lignes = Ligne.objects.filter(
         Q(code__icontains=term) | Q(origine__icontains=term) | Q(dest__icontains=term)
     ).order_by('code')[:20]
-    results = [{'id': l.code, 'text': str(l)} for l in lignes]
+    
+    results = [{'id': l.code, 'text': f"{l.code} - {l.dest} → {l.origine}"} for l in lignes]
     return JsonResponse({'results': results})
