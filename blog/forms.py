@@ -72,6 +72,11 @@ NavetteFormSet = modelformset_factory(
 # ✅ Form séparé pour l'édition — validation normale, pas de lignes vides
 class NavetteEditForm(forms.ModelForm):
     
+    ligne = forms.ModelChoiceField(
+        queryset=Ligne.objects.none(),
+        required=True,
+        widget=forms.Select(attrs={'class': 'select2-ligne', 'style': 'width:100%'})
+    )
     achauffeur = forms.ModelChoiceField(
         queryset=Employe.objects.all(), required=False,
         widget=forms.Select(attrs={'class': 'select2-ajax-employe'})
