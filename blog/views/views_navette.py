@@ -53,7 +53,8 @@ def navette_manage(request):
     lignes_map = {
         "grand jour": [118, 147, 145, 120, 132, 233],
         "jour":       [146, 189, 142, 209, 406, 149, 194, 104, 295],
-        "nuit":       [961, 518, 117, 507, 520, 504, 506, 503, 512, 501, 502, 509, 964, 521],
+        "nuit1":       [961, 518, 117, 507, 520, 504, 506],
+        "nuit2":       [503, 512, 501, 502, 509, 964, 521],
         "agence":     [100, 963, 183, 102, 101, 143, 144],
     }
     codes_lignes = lignes_map.get(auto, [])
@@ -89,7 +90,9 @@ def navette_manage(request):
 
                 obj = form.save(commit=False)
 
-                if auto == "nuit":
+                if auto == "nuit1":
+                    obj.atypsrv, obj.nda = "N", 2
+                elif auto == "nuit2":
                     obj.atypsrv, obj.nda = "N", 2
                 elif auto == "jour":
                     obj.atypsrv, obj.nda = "J", 1

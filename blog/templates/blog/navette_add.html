@@ -90,32 +90,25 @@
 <script>
 $(document).ready(function() {
 
-
-    // ✅ Select2 AJAX pour ligne
-    $('.select2-ligne').each(function() {
-        var $el = $(this);
-        var selectedId = $el.val();
-        var selectedText = $el.find('option:selected').text();
-        if (selectedId && selectedText && selectedText !== '---------') {
-            $el.append(new Option(selectedText, selectedId, true, true));
-        }
-        $el.select2({
-            ajax: {
-                url: "{% url 'search_ligne' %}",
-                dataType: 'json', delay: 250,
-                data: function(p) { return { term: p.term }; },
-                processResults: function(d) { return d; }
-            },
-            minimumInputLength: 1,
-            allowClear: true,
-            placeholder: "Rechercher une ligne...",
-            width: '100%'
-        });
+    // ✅ Select2 ligne
+    $('.select2-ligne').select2({
+        ajax: {
+            url: "{% url 'search_ligne' %}",
+            dataType: 'json', delay: 250,
+            data: function(p) { return { term: p.term }; },
+            processResults: function(d) { return d; }
+        },
+        minimumInputLength: 1,
+        allowClear: true,
+        placeholder: "Rechercher une ligne...",
+        width: '100%',
+        dropdownParent: $('body')
     });
 
     function initSelect2Employe(selector) {
         $(selector).each(function() {
-            $(this).select2({
+            var $el = $(this);
+            $el.select2({
                 ajax: {
                     url: "{% url 'search_employe' %}",
                     dataType: 'json', delay: 250,
@@ -124,15 +117,17 @@ $(document).ready(function() {
                 },
                 minimumInputLength: 1,
                 allowClear: true,
-                placeholder: "",
-                width: '100%'
+                placeholder: "Rechercher un chauffeur...",
+                width: '100%',
+                dropdownParent: $('body')
             });
         });
     }
 
     function initSelect2Equipement(selector) {
         $(selector).each(function() {
-            $(this).select2({
+            var $el = $(this);
+            $el.select2({
                 ajax: {
                     url: "{% url 'search_equipement' %}",
                     dataType: 'json', delay: 250,
@@ -141,8 +136,9 @@ $(document).ready(function() {
                 },
                 minimumInputLength: 1,
                 allowClear: true,
-                placeholder: "",
-                width: '100%'
+                placeholder: "Rechercher un véhicule...",
+                width: '100%',
+                dropdownParent: $('body')
             });
         });
     }

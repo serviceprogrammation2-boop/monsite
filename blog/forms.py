@@ -64,12 +64,11 @@ class NavetteForm(forms.ModelForm):
 NavetteFormSet = modelformset_factory(
     Navette,
     form=NavetteForm,
-    extra=15,
+    extra=9,
     can_delete=True,
 )
 
 
-# ✅ Form séparé pour l'édition — validation normale, pas de lignes vides
 class NavetteEditForm(forms.ModelForm):
     
     ligne = forms.ModelChoiceField(
@@ -98,6 +97,14 @@ class NavetteEditForm(forms.ModelForm):
         model = Navette
         fields = ['ligne', 'adatserv', 'achauffeur', 'rchauffeur', 'aveh', 'rveh', 'asens']
         widgets = {'adatserv': forms.DateInput(attrs={'type': 'date'})}
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['ligne'].required = False
+        self.fields['adatserv'].required = False
+        for field_name in ['asens', 'atypsrv', 'nda']:
+            if field_name in self.fields:
+                self.fields[field_name].required = False
 
     def clean_aveh(self):
         return self.cleaned_data.get('aveh') or None
