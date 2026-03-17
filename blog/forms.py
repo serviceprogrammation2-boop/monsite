@@ -34,7 +34,7 @@ class NavetteForm(forms.ModelForm):
         for field_name in ['asens', 'atypsrv', 'nda']:
             if field_name in self.fields:
                 self.fields[field_name].required = False
-
+    
     def clean(self):
         cleaned_data = super().clean()
         ligne = cleaned_data.get('ligne')
@@ -100,11 +100,51 @@ class NavetteEditForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['ligne'].required = False
-        self.fields['adatserv'].required = False
-        for field_name in ['asens', 'atypsrv', 'nda']:
-            if field_name in self.fields:
-                self.fields[field_name].required = False
+
+        # ✅ Ligne
+        if 'ligne' in self.data:
+            try:
+                self.fields['ligne'].queryset = Ligne.objects.filter(code=self.data.get('ligne'))
+            except Exception:
+                pass
+        elif self.instance and self.instance.pk:
+            self.fields['ligne'].queryset = Ligne.objects.filter(code=self.instance.ligne_id)
+
+        # ✅ Achauffeur
+        if 'achauffeur' in self.data:
+            try:
+                self.fields['achauffeur'].queryset = Employe.objects.filter(pk=self.data.get('achauffeur'))
+            except Exception:
+                pass
+        elif self.instance and self.instance.pk and self.instance.achauffeur:
+            self.fields['achauffeur'].queryset = Employe.objects.filter(pk=self.instance.achauffeur.pk)
+
+        # ✅ Rchauffeur
+        if 'rchauffeur' in self.data:
+            try:
+                self.fields['rchauffeur'].queryset = Employe.objects.filter(pk=self.data.get('rchauffeur'))
+            except Exception:
+                pass
+        elif self.instance and self.instance.pk and self.instance.rchauffeur:
+            self.fields['rchauffeur'].queryset = Employe.objects.filter(pk=self.instance.rchauffeur.pk)
+
+        # ✅ Aveh
+        if 'aveh' in self.data:
+            try:
+                self.fields['aveh'].queryset = Equipement.objects.filter(pk=self.data.get('aveh'))
+            except Exception:
+                pass
+        elif self.instance and self.instance.pk and self.instance.aveh:
+            self.fields['aveh'].queryset = Equipement.objects.filter(pk=self.instance.aveh.pk)
+
+        # ✅ Rveh
+        if 'rveh' in self.data:
+            try:
+                self.fields['rveh'].queryset = Equipement.objects.filter(pk=self.data.get('rveh'))
+            except Exception:
+                pass
+        elif self.instance and self.instance.pk and self.instance.rveh:
+            self.fields['rveh'].queryset = Equipement.objects.filter(pk=self.instance.rveh.pk)
 
     def clean_aveh(self):
         return self.cleaned_data.get('aveh') or None
