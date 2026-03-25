@@ -29,15 +29,26 @@
         <button type="submit" class="btn btn-primary">Filtrer</button>
     </form>
 
-    <!-- ===== Bouton PDF séparé ===== -->
-    <form method="get" action="{% url 'ligne_pdf' %}" target="_blank" style="margin-bottom: 20px;">
-        <input type="hidden" name="code" value="{{ code }}">
-        <input type="hidden" name="agence" value="{{ agence }}">
-        <input type="hidden" name="actif" value="{{ actif }}">
-        <button type="submit" class="btn btn-danger">
-            📄 Exporter en PDF
-        </button>
-    </form>
+    <!-- ===== Boutons Export ===== -->
+    <div class="d-flex gap-2" style="margin-bottom: 20px;">
+        <form method="get" action="{% url 'ligne_pdf' %}" target="_blank">
+            <input type="hidden" name="code" value="{{ code }}">
+            <input type="hidden" name="agence" value="{{ agence }}">
+            <input type="hidden" name="actif" value="{{ actif }}">
+            <button type="submit" class="btn btn-danger">
+                📄 Exporter en PDF
+            </button>
+        </form>
+
+        <form method="get" action="{% url 'ligne_excel' %}">
+            <input type="hidden" name="code" value="{{ code }}">
+            <input type="hidden" name="agence" value="{{ agence }}">
+            <input type="hidden" name="actif" value="{{ actif }}">
+            <button type="submit" class="btn btn-success">
+                📊 Exporter en Excel
+            </button>
+        </form>
+    </div>
 
     <!-- ===== Tableau des lignes ===== -->
     <div class="table-responsive">

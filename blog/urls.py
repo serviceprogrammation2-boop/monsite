@@ -5,7 +5,7 @@ from .views import (
     navettes_pdf, navettes1_pdf, navettes2_pdf, navettes3_pdf,
     raportjs_pdf, raportjs_sortie_pdf, raportjs1_pdf, raportjs_mois_pdf,
     chauffeurs_pdf, chauffeurs1_pdf, chauffeurs2_pdf, chauffeurs_sortie_pdf,
-    ligne_list, ligne_pdf,
+    ligne_list, ligne_pdf, ligne_excel,
     equipement_list, equipement_pdf, equipement1_pdf, equipement2_pdf, equipement3_pdf
 )
 from . import reports
@@ -42,6 +42,7 @@ urlpatterns = [
     path("lignes/", ligne_list, name="ligne_list"),
     path('export/pdf/', reports.export_navettes_pdf, name='export_navettes_pdf'),
     path("lignes/pdf/", ligne_pdf, name="ligne_pdf"),
+    path("lignes/excel/", ligne_excel, name="ligne_excel"),
 
     path('equipements/', equipement_list, name='equipement_list'),
     path('equipements/pdf/', equipement_pdf, name='equipement_pdf'),
