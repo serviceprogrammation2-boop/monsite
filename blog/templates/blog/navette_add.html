@@ -90,7 +90,6 @@
 <script>
 $(document).ready(function() {
 
-    // ✅ Select2 ligne
     $('.select2-ligne').select2({
         ajax: {
             url: "{% url 'search_ligne' %}",
@@ -106,52 +105,49 @@ $(document).ready(function() {
     });
 
     function initSelect2Employe(selector) {
-        $(selector).each(function() {
-            var $el = $(this);
-            $el.select2({
-                ajax: {
-                    url: "{% url 'search_employe' %}",
-                    dataType: 'json', delay: 250,
-                    data: function(p) { return { term: p.term }; },
-                    processResults: function(d) { return d; }
-                },
-                minimumInputLength: 1,
-                allowClear: true,
-                placeholder: "Rechercher un chauffeur...",
-                width: '100%',
-                dropdownParent: $('body')
-            });
+        $(selector).select2({
+            ajax: {
+                url: "{% url 'search_employe' %}",
+                dataType: 'json', delay: 250,
+                data: function(p) { return { term: p.term }; },
+                processResults: function(d) { return d; }
+            },
+            minimumInputLength: 1,
+            allowClear: true,
+            placeholder: "Rechercher un chauffeur...",
+            width: '100%',
+            dropdownParent: $('body')
         });
     }
 
     function initSelect2Equipement(selector) {
-        $(selector).each(function() {
-            var $el = $(this);
-            $el.select2({
-                ajax: {
-                    url: "{% url 'search_equipement' %}",
-                    dataType: 'json', delay: 250,
-                    data: function(p) { return { term: p.term }; },
-                    processResults: function(d) { return d; }
-                },
-                minimumInputLength: 1,
-                allowClear: true,
-                placeholder: "Rechercher un véhicule...",
-                width: '100%',
-                dropdownParent: $('body')
-            });
+        $(selector).select2({
+            ajax: {
+                url: "{% url 'search_equipement' %}",
+                dataType: 'json', delay: 250,
+                data: function(p) { return { term: p.term }; },
+                processResults: function(d) { return d; }
+            },
+            minimumInputLength: 1,
+            allowClear: true,
+            placeholder: "Rechercher un véhicule...",
+            width: '100%',
+            dropdownParent: $('body')
         });
     }
 
     initSelect2Employe('.select2-ajax-employe');
     initSelect2Equipement('.select2-ajax-equipement');
 
-    // ✅ Fix clavier mobile
+    // Fix mobile : focus + clavier
     $(document).on('select2:open', function() {
         setTimeout(function() {
             var searchField = document.querySelector('.select2-container--open .select2-search__field');
-            if (searchField) searchField.focus();
-        }, 100);
+            if (searchField) {
+                searchField.focus();
+                searchField.click();
+            }
+        }, 300);
     });
 
 });
