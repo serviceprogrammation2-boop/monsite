@@ -5,7 +5,7 @@ from django.contrib.auth.decorators import login_required
 from ..models import Employe, Equipement, Ligne
 
 
-@login_required
+
 def search_employe(request):
     term = request.GET.get('term', '').strip()
     if term:
@@ -22,7 +22,7 @@ def search_employe(request):
     return JsonResponse({"results": results})
 
 
-@login_required
+
 def search_equipement(request):
     term = request.GET.get('term', '')
     equipements = Equipement.objects.filter(cod_equ__icontains=term)[:20]
