@@ -61,3 +61,38 @@ def get_filtered_navettes(request):
         navettes = navettes.filter(aveh__icontains=vehicule)
 
     return navettes, start_str, end_str, chauffeur, vehicule
+# =========================
+# FONCTIONS UTILITAIRES PDF
+# =========================
+def safe_float(v, default=0.0):
+    try:
+        return float(v)
+    except Exception:
+        return default
+
+
+def safe_int(v, default=0):
+    try:
+        return int(v)
+    except Exception:
+        return default
+
+
+def parse_date_iso(s):
+    if not s:
+        return None
+    try:
+        return datetime.strptime(s, "%Y-%m-%d").date()
+    except Exception:
+        return None
+
+
+# =========================
+# CONSTANTES
+# =========================
+MAP_SORTIE = {
+    1: "Dépôt Ben Arous",
+    2: "Gare Routière Nord",
+    3: "Gare Routière Sud",
+    4: "Convention",
+}
