@@ -189,6 +189,32 @@ $(document).ready(function() {
         width: '100%'
     });
 
+    // Auto-remplissage achauffeur et aveh pour chaque ligne du formset
+$(document).on('select2:select', '.select2-ligne', function(e) {
+    var code = e.params.data.id;
+    var $row = $(this).closest('tr');
+
+    $.get("{% url 'get_ligne_titulaire' %}", { code: code }, function(data) {
+        // Remplir achauffeur
+        var $achauffeur = $row.find('.select2-ajax-employe').first();
+        if (data.achauffeur_id) {
+            var option = new Option(data.achauffeur_text, data.achauffeur_id, true, true);
+            $achauffeur.append(option).trigger('change');
+        } else {
+            $achauffeur.val(null).trigger('change');
+        }
+
+        // Remplir aveh
+        var $aveh = $row.find('.select2-ajax-equipement').first();
+        if (data.aveh) {
+            var option2 = new Option(data.aveh, data.aveh, true, true);
+            $aveh.append(option2).trigger('change');
+        } else {
+            $aveh.val(null).trigger('change');
+        }
+    });
+});
+
 });
 </script>
 
